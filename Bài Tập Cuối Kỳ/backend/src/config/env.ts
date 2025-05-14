@@ -10,7 +10,7 @@ export const config = {
   JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret',
   SMTP_HOST: process.env.SMTP_HOST || 'smtp.ethereal.email',
   SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
-  SMTP_USER: process.env.SMTP_USER || 'your_ethereal_email',
-  SMTP_PASS: process.env.SMTP_PASS || 'your_ethereal_password',
+  SMTP_USER: process.env.SMTP_USER || 'Duydvdhtb172005@gmail.com',
+  SMTP_PASS: process.env.SMTP_PASS || 'dousuizjilvvvajxt',
   PORT: parseInt(process.env.PORT || '5000', 10),
 };

@@ -10,6 +10,7 @@ export const validateRequest = (req: Request, res: Response, next: NextFunction)
   }
   next();
 };
+
 interface AuthRequest extends Request {
   user?: { id: number; email: string; role: string };
 }
@@ -29,4 +30,12 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     req.user = user as { id: number; email: string; role: string };
     next();
   });
+};
+
+// Thêm mới: Kiểm tra role admin
+export const restrictToAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Chỉ admin được phép truy cập' });
+  }
+  next();
 };
