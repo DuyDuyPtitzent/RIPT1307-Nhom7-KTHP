@@ -1,24 +1,61 @@
-import request from '@/utils/request';
-import { API_BASE_URL } from '@/services/constants';
-import { LoginResponse, RegisterResponse } from '@/services/types/auth';
+import request from '../utils/request';
+import { LoginParams, RegisterParams, ForgotPasswordParams, ResetPasswordParams, UpdatePasswordParams,UpdateUserPasswordParams } from './types/auth';
 
-export const login = async (email: string, password: string): Promise<LoginResponse> => {
-  const response = await request(`${API_BASE_URL}/api/auth/login`, {
+export async function login(params: LoginParams) {
+  const res = await request('/api/auth/login', {
     method: 'POST',
-    data: { email, password },
+    data: params,
+    skipErrorHandler: true,
   });
-  return response;
-};
+  console.log('login response raw (before return):', res);
+  // Trả về dữ liệu trực tiếp, không lồng trong data
+  return res;
+}
 
-export const register = async (
-  fullName: string,
-  email: string,
-  password: string,
-  confirmPassword: string
-): Promise<RegisterResponse> => {
-  const response = await request(`${API_BASE_URL}/api/auth/register`, {
+export async function register(params: RegisterParams) {
+  const res = await request('/api/auth/register', {
     method: 'POST',
-    data: { fullName, email, password, confirmPassword },
+    data: params,
+    skipErrorHandler: true,
   });
-  return response;
-};
+  console.log('register response raw:', res);
+  return res;
+}
+
+export async function forgotPassword(params: ForgotPasswordParams) {
+  return request('/api/auth/forgot-password', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+export async function resetPassword(params: ResetPasswordParams) {
+  return request('/api/auth/reset-password', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+export async function getCurrentUser() {
+  const res = await request('/api/auth/me', {
+    method: 'GET',
+  });
+  console.log('getCurrentUser response raw:', res);
+  return res;
+}
+
+export async function updatePassword(params: UpdatePasswordParams) {
+  return request('/api/auth/password', {
+    method: 'PUT',
+    data: params,
+  });
+}
+export async function updateUserPassword(id: number, params: UpdateUserPasswordParams) {
+  const res = await request(`/api/auth/users/${id}/password`, {
+    method: 'PUT',
+    data: params,
+    skipErrorHandler: true,
+  });
+  console.log('updateUserPassword response raw:', res);
+  return res;
+}

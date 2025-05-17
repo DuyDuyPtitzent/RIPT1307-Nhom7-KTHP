@@ -1,30 +1,12 @@
-import React, { useEffect } from 'react';
 import { history } from 'umi';
-import { useAuth } from '@/models/auth';
-import { Spin } from 'antd';
-import './index.less';
+import { useEffect } from 'react';
 
-const IndexPage: React.FC = () => {
-  const { user, loading } = useAuth();
-
+const Index: React.FC = () => {
   useEffect(() => {
-    if (!loading) {
-      if (user) {
-        // Nếu đã đăng nhập, chuyển hướng đến dashboard
-        history.push('/dashboard');
-      } else {
-        // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
-        history.push('/auth/login');
-      }
-    }
-  }, [user, loading]);
+    history.push('/auth/login');
+  }, []);
 
-  // Hiển thị loading trong khi kiểm tra trạng thái đăng nhập
-  return (
-    <div className="index-container">
-      <Spin tip="Đang tải..." />
-    </div>
-  );
+  return null;
 };
 
-export default IndexPage;
+export default Index;

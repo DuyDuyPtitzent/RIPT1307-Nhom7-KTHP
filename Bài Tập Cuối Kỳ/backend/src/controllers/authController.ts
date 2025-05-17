@@ -12,7 +12,11 @@ export const register = async (req: Request, res: Response) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: 'Mật khẩu xác nhận không khớp' });
+  }
 
   try {
     console.log('Bắt đầu đăng ký, email:', email);
@@ -39,13 +43,14 @@ export const register = async (req: Request, res: Response) => {
       console.log('Email đã gửi');
     } catch (emailError) {
       console.error('Lỗi gửi email:', emailError);
+      // Không trả về lỗi, chỉ log
     }
 
     res.status(201).json({ message: 'Đăng ký thành công' });
   } catch (error) {
     console.error('Lỗi trong hàm register:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ message: 'Lỗi máy chủ', error: errorMessage });
+    res.status(500).json({ message: 'Lỗi máy chủ khi đăng ký', error: errorMessage });
   }
 };
 
@@ -82,7 +87,7 @@ export const login = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Lỗi trong hàm login:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ message: 'Lỗi máy chủ', error: errorMessage });
+    res.status(500).json({ message: 'Lỗi máy chủ khi đăng nhập', error: errorMessage });
   }
 };
 
@@ -113,17 +118,28 @@ export const forgotPassword = async (req: Request, res: Response) => {
       [resetToken, user.id]
     );
 
-    const resetLink = `http://localhost:3000/auth/reset-password?token=${resetToken}`;
-    await sendEmail(
-      email,
-      'Yêu cầu đặt lại mật khẩu',
-      `Kính gửi ${user.full_name},\n\nVui lòng nhấp vào liên kết sau để đặt lại mật khẩu: ${resetLink}\nLiên kết có hiệu lực trong 15 phút.\n\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
-    );
+    try {
+      const resetLink = `http://localhost:8000/auth/reset-password?token=${resetToken}`;
+      await sendEmail(
+        email,
+        'Yêu cầu đặt lại mật khẩu',
+        `Kính gửi ${user.full_name},\n\nVui lòng nhấp vào liên kết sau để đặt lại mật khẩu: ${resetLink}\nLiên kết có hiệu lực trong 15 phút.\n\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
+      );
+    } catch (emailError) {
+      console.error('Lỗi gửi email trong forgotPassword:', emailError);
+      // Rollback reset_token nếu gửi email thất bại
+      await pool.query(
+        'UPDATE users SET reset_token = NULL, reset_token_expiry = NULL WHERE id = ?',
+        [user.id]
+      );
+      return res.status(500).json({ message: 'Không thể gửi email đặt lại mật khẩu' });
+    }
 
     res.json({ message: 'Email đặt lại mật khẩu đã được gửi' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi máy chủ' });
+    console.error('Lỗi trong hàm forgotPassword:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ message: 'Lỗi máy chủ khi xử lý yêu cầu quên mật khẩu', error: errorMessage });
   }
 };
 
@@ -158,8 +174,9 @@ export const resetPassword = async (req: Request, res: Response) => {
 
     res.json({ message: 'Đặt lại mật khẩu thành công' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi máy chủ' });
+    console.error('Lỗi trong hàm resetPassword:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ message: 'Lỗi máy chủ khi đặt lại mật khẩu', error: errorMessage });
   }
 };
 
@@ -187,7 +204,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Lỗi trong hàm getCurrentUser:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ message: 'Lỗi máy chủ', error: errorMessage });
+    res.status(500).json({ message: 'Lỗi máy chủ khi lấy thông tin người dùng', error: errorMessage });
   }
 };
 
@@ -218,7 +235,7 @@ export const updatePassword = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Lỗi trong hàm updatePassword:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ message: 'Lỗi máy chủ', error: errorMessage });
+    res.status(500).json({ message: 'Lỗi máy chủ khi cập nhật mật khẩu', error: errorMessage });
   }
 };
 
@@ -236,11 +253,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Lỗi trong hàm getAllUsers:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ message: 'Lỗi máy chủ', error: errorMessage });
+    res.status(500).json({ message: 'Lỗi máy chủ khi lấy danh sách người dùng', error: errorMessage });
   }
 };
 
-// Thêm hàm mới: Thay đổi mật khẩu của người dùng bất kỳ (chỉ admin)
 export const updateUserPassword = async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

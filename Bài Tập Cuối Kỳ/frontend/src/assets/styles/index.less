@@ -1,124 +1,48 @@
-.auth-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 40px 20px;
-  background: radial-gradient(circle at top left, #ffffff, #eef3f8);
-  font-family: 'Inter', sans-serif;
-
-h2 {
-  font-size: 36px;
-  font-weight: 800;
-  line-height: 1.2;
-  color: #1f2937; // màu đậm, rõ, không chói
-  margin-bottom: 32px;
+.authContainer {
+  max-width: 420px;
+  margin: 80px auto;
+  padding: 32px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
   text-align: center;
-  letter-spacing: -0.5px;
-  text-shadow:
-    1px 1px 2px rgba(0, 0, 0, 0.05),
-    0 2px 4px rgba(0, 0, 0, 0.08);
-  background: linear-gradient(90deg, #8b0000, #e11d48);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-  .ant-form {
-    width: 100%;
-    max-width: 420px;
-    background: #ffffff;
-    padding: 40px 32px;
-    border-radius: 24px;
-    box-shadow:
-      0 10px 15px rgba(0, 0, 0, 0.05),
-      0 4px 6px rgba(0, 0, 0, 0.03);
-    animation: floatUp 0.8s ease;
+  transition: all 0.3s ease;
+  position: relative;
 
-    .ant-form-item {
-      margin-bottom: 24px;
-    }
+  h2 {
+    margin-bottom: 24px;
+    font-size: 24px;
+    font-weight: 600;
+    color: @heading-color;
+  }
 
-    .ant-input {
-      height: 44px;
-      font-size: 15px;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      padding: 0 14px;
-      transition: border 0.3s;
+  .ant-input,
+  .ant-btn {
+    border-radius: 8px;
+    font-size: 15px;
+  }
 
-      &:focus,
-      &:hover {
-        border-color: #b90c0c;
-        box-shadow: 0 0 0 2px rgba(62, 2, 2, 0.2);
-      }
-    }
+  .ant-btn-primary {
+    background: linear-gradient(135deg, @primary-color, lighten(@primary-color, 10%));
+    border: none;
+    transition: all 0.3s ease;
 
-    .ant-btn-primary {
-      width: 100%;
-      height: 44px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 12px;
-      background: linear-gradient(to right, #7f1d1d, #dc2626);
-      border: none;
-      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-      transition: all 0.3s ease;
-
-      &:hover {
-        background: linear-gradient(to right, #991b1b, #b91c1c);
-        box-shadow: 0 6px 18px rgba(185, 28, 28, 0.5);
-        transform: translateY(-2px);
-      }
-    }
-
-    .ant-btn-link {
-      color: #374151;
-      font-weight: 500;
-      padding: 0;
-      transition: color 0.2s;
-
-      &:hover {
-        color: #3a0202;
-        text-decoration: underline;
-      }
+    &:hover {
+      background: darken(@primary-color, 5%);
     }
   }
 }
+@primary-color: #10b981; // Xanh ngọc hiện đại (Tailwind Emerald)
+@link-color: #0ea5e9; // Xanh da trời nhẹ
+@success-color: #22c55e;
+@warning-color: #f97316;
+@error-color: #ef4444;
 
-.auth-layout {
-  background: linear-gradient(135deg, #fdfcfb 0%, #e2ebf0 100%);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.6s ease-in-out;
-}
-
-.index-container {
-  background: linear-gradient(to top left, #ffffff 0%, #f0f4f8 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-}
-
-/* Animations */
-@keyframes floatUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+@font-size-base: 15px;
+@heading-color: rgba(0, 0, 0, 0.88);
+@text-color: rgba(0, 0, 0, 0.75);
+@text-color-secondary: rgba(0, 0, 0, 0.5);
+@disabled-color: rgba(0, 0, 0, 0.3);
+@border-radius-base: 12px;
+@border-color-base: #e5e7eb; // Tailwind gray-200
+@box-shadow-base: 0 12px 24px rgba(0, 0, 0, 0.05);

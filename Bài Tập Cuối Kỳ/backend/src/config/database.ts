@@ -10,9 +10,12 @@ export const pool: Pool = createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
-pool.getConnection().then(conn => {
-  console.log('Kết nối MySQL thành công');
-  conn.release();
-}).catch(err => {
-  console.error('Lỗi kết nối MySQL:', err);
-});
+
+pool.getConnection()
+  .then(conn => {
+    console.log('Kết nối MySQL thành công');
+    conn.release();
+  })
+  .catch(err => {
+    console.error('Lỗi kết nối MySQL:', err);
+  });
