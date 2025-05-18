@@ -7,10 +7,15 @@ export async function login(params: LoginParams) {
     data: params,
     skipErrorHandler: true,
   });
-  console.log('login response raw (before return):', res);
-  // Trả về dữ liệu trực tiếp, không lồng trong data
+
+  if (res && res.message && !res.token) {
+    // Có message lỗi, không có token => lỗi
+    throw new Error(res.message);
+  }
+
   return res;
 }
+
 
 export async function register(params: RegisterParams) {
   const res = await request('/api/auth/register', {
