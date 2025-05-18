@@ -1,48 +1,78 @@
-//Quản lý state và logic đăng ký/đăng nhậpimport { useState } from 'react';
-import { login as loginAPI, register as registerAPI } from '@/services/auth';
-import { LoginResponse } from '@/services/types/auth';
-import { useState } from 'react';
-export const useAuth = () => {
-  const [user, setUser] = useState<LoginResponse['user'] | null>(null);
-  const [loading, setLoading] = useState(false);
+import { Effect, Reducer } from 'umi';
+import { getCurrentUser } from '../services/auth';
 
-  const login = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const response = await loginAPI(email, password);
-      setUser(response.user);
-      localStorage.setItem('token', response.token);
-      return response;
-    } catch (error: any) {
-      throw new Error(error.message || 'Đăng nhập thất bại');
-    } finally {
-      setLoading(false);
-    }
+
+import { AuthState } from '../services/types/auth';
+
+export interface AuthModelType {
+  namespace: 'auth';
+  state: AuthState;
+  effects: {
+    fetchCurrentUser: Effect;
   };
-
-  const register = async (
-    fullName: string,
-    email: string,
-    password: string,
-    confirmPassword: string
-  ) => {
-    setLoading(true);
-    try {
-      const response = await registerAPI(fullName, email, password, confirmPassword);
-      return response;
-    } catch (error: any) {
-      throw new Error(error.message || 'Đăng ký thất bại');
-    } finally {
-      setLoading(false);
-    }
+  reducers: {
+    setUser: Reducer<AuthState>;
+    clearUser: Reducer<AuthState>;
   };
+}
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('token');
-  };
+const AuthModel: AuthModelType = {
+  namespace: 'auth',
 
-  return { user, loading, login, register, logout };
+  state: {
+    user: null,
+    isAuthenticated: false,
+  },
+
+  effects: {
+    *fetchCurrentUser(_: any, { call, put }: any): Generator<any, void, any> {
+      try {
+        // Kiểm tra token trước khi gọi API
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.warn('Không tìm thấy token, không thể lấy thông tin người dùng');
+          yield put({ type: 'clearUser' });
+          return;
+        }
+
+        console.log('Bắt đầu gọi API getCurrentUser');
+        const response = yield call(getCurrentUser);
+        console.log('Phản hồi từ getCurrentUser:', response);
+
+        if (response && response.id) {
+          yield put({
+            type: 'setUser',
+            payload: response,
+          });
+        } else {
+          console.warn('Phản hồi từ API không hợp lệ:', response);
+          yield put({ type: 'clearUser' });
+        }
+      } catch (error) {
+        console.error('Lỗi khi gọi getCurrentUser:', error);
+        yield put({ type: 'clearUser' });
+      }
+    },
+  },
+
+  reducers: {
+    setUser(state, { payload }) {
+      return {
+        ...state,
+        user: payload,
+        isAuthenticated: true,
+      };
+    },
+    clearUser(state) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      return {
+        ...state,
+        user: null,
+        isAuthenticated: false,
+      };
+    },
+  },
 };
 
-
+export default AuthModel;
