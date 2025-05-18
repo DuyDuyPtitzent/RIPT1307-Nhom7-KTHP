@@ -40,7 +40,7 @@ export async function getCurrentUser() {
   const res = await request('/api/auth/me', {
     method: 'GET',
   });
-  console.log('getCurrentUser response raw:', res);
+  console.log('getCurrentUser response:', res);
   return res;
 }
 

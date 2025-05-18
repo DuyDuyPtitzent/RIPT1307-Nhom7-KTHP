@@ -1,31 +1,36 @@
 import React from 'react';
-import { Layout } from 'antd';
-import { useSelector, history } from 'umi';
-import Header from './Header';
-import Footer from './Footer';
-import styles from './AppLayout.less';
+import { Layout, Menu } from 'antd';
+import { useHistory, useLocation } from 'umi';
+import styles from '../components/AppLayout.less';
 
-const { Content } = Layout;
+const { Header, Content, Footer } = Layout;
 
-interface AppLayoutProps {
-  children: React.ReactNode;
-}
+const AppLayout: React.FC = ({ children }) => {
+  const history = useHistory();
+  const location = useLocation();
 
-const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const auth = useSelector((state: any) => state.auth);
-
-  if (!auth.isAuthenticated) {
-    history.push('/auth/login');
-    return null;
-  }
+  const menuItems = [
+    { key: '/dashboard/residents', label: 'Dân cư' },
+    { key: '/admin/users', label: 'Quản lý người dùng' }, // Chỉ admin
+  ];
 
   return (
-    <Layout className={styles.layout}>
-      <Header />
-      <Content className={styles.content}>
-        <div className={styles.contentInner}>{children}</div>
+    <Layout className={styles.authContainer}>
+      <Header>
+        <Menu
+          theme="dark"
+          mode="horizontal"
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          onClick={({ key }) => history.push(key)}
+        />
+      </Header>
+      <Content style={{ padding: '24px', minHeight: '80vh' }}>
+        {children}
       </Content>
-      <Footer />
+      <Footer style={{ textAlign: 'center' }}>
+        Hệ thống Quản lý Dân cư ©2025
+      </Footer>
     </Layout>
   );
 };

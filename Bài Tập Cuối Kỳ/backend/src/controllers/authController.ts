@@ -186,13 +186,11 @@ export const logout = async (req: Request, res: Response) => {
 
 export const getCurrentUser = async (req: Request, res: Response) => {
   const user = (req as any).user;
-
   try {
     const [users] = await pool.query('SELECT id, full_name, email, role, created_at FROM users WHERE id = ?', [user.id]);
     if ((users as any[]).length === 0) {
       return res.status(404).json({ message: 'Không tìm thấy người dùng' });
     }
-
     const currentUser = (users as any[])[0];
     res.json({
       id: currentUser.id,
@@ -203,8 +201,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Lỗi trong hàm getCurrentUser:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ message: 'Lỗi máy chủ khi lấy thông tin người dùng', error: errorMessage });
+    res.status(500).json({ message: 'Lỗi máy chủ khi lấy thông tin người dùng' });
   }
 };
 

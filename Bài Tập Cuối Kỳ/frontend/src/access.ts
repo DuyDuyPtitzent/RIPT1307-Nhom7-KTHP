@@ -1,6 +1,8 @@
-export default function access(initialState: { role: string | null }) {
-  const { role } = initialState || {};
+export default function (initialState: { currentUser?: { role: string } }) {
+  const { currentUser } = initialState || {};
+  console.log('access.ts currentUser:', currentUser); // Debug
   return {
-    admin: role === 'admin',
+    user: currentUser && (currentUser.role === 'user' || currentUser.role === 'admin'),
+    admin: currentUser && currentUser.role === 'admin',
   };
 }
