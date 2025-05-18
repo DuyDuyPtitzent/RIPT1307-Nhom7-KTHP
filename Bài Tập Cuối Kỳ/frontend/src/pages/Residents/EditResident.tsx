@@ -11,19 +11,24 @@ const EditResident: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
-    const fetchResident = async () => {
-      try {
-        const resident = await getResidentById(parseInt(id));
-        form.setFieldsValue({
-          ...resident,
-          dateOfBirth: resident.dateOfBirth ? moment(resident.dateOfBirth) : null,
-        });
-      } catch (error: any) {
-        message.error(error.message || 'Không thể tải thông tin cư dân');
-      }
-    };
-    fetchResident();
-  }, [id, form]);
+  const fetchResident = async () => {
+    try {
+      const resident = await getResidentById(parseInt(id));
+      form.setFieldsValue({
+        fullName: resident.full_name,
+        email: resident.email,
+        phoneNumber: resident.phone_number,
+        dateOfBirth: resident.date_of_birth ? moment(resident.date_of_birth) : null,
+        gender: resident.gender,
+        apartmentNumber: resident.apartment_number,
+        address: resident.address,
+      });
+    } catch (error: any) {
+      message.error(error.message || 'Không thể tải thông tin cư dân');
+    }
+  };
+  fetchResident();
+}, [id, form]);
 
   const onFinish = async (values: any) => {
     try {

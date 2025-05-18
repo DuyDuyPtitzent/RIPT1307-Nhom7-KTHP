@@ -9,22 +9,28 @@ const Login: React.FC = () => {
   const [form] = Form.useForm();
 
   const onFinish = async (values: any) => {
-    try {
-      const response = await login({ email: values.email, password: values.password });
-      console.log('Login response:', response);
+  try {
+    const response = await login({
+      email: values.email,
+      password: values.password,
+    });
 
-      // Lưu token và user info
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('user', JSON.stringify(response.user));
 
-      message.success('Đăng nhập thành công');
-      // Chuyển hướng đến trang cư dân
-      history.push('/dashboard/residents');
-    } catch (error: any) {
-      console.error('Lỗi đăng nhập:', error);
-      message.error(error.message || 'Đăng nhập thất bại');
-    }
-  };
+    message.success('Đăng nhập thành công');
+    history.push('/dashboard/residents');
+  } catch (error: any) {
+  console.error('Lỗi đăng nhập:', error);
+  const errMsg =
+    error.response?.data?.message || // lấy message backend trả về
+    error.message || // lỗi JS hoặc lỗi mạng
+    'Đăng nhập thất bại';
+  message.error(errMsg);
+}
+
+};
+
 
   return (
     <div className={styles.authContainer}>

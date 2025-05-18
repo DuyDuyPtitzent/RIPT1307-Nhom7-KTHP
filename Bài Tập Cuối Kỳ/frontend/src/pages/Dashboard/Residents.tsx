@@ -5,7 +5,7 @@ import { getResidents, deleteResident } from '../../services/residents';
 import TableActions from '../../components/TableActions';
 import { getCurrentUser } from '../../services/auth';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+
 
 const Residents: React.FC = () => {
   const [residents, setResidents] = useState([]);
