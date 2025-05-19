@@ -18,9 +18,9 @@
     { path: '/dashboard/materials',
        component: '@/pages/Dashboard/Materials', 
        access: 'admin' },
-        // { path: '/materials/details/:id',
-        //    component: '@/pages/Materials/MaterialDetails',
-        //     access: 'admin' },
+        { path: '/materials/details/:id',
+           component: '@/pages/Materials/MaterialDetails',
+            access: 'admin' },
       {
         path: '/dashboard/residents/details/:id',
         component: '@/pages/Residents/ResidentDetails',

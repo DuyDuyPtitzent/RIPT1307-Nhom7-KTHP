@@ -11,7 +11,7 @@ import {
 import styles from '../components/AppLayout.less';
 import { getCurrentUser } from '../services/auth';
 
-const { Header, Content, Footer } = Layout;
+const { Header, Content } = Layout;
 
 const AppLayout: React.FC = ({ children }) => {
   const history = useHistory();

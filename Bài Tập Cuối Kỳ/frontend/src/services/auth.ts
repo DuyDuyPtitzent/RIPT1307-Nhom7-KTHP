@@ -26,8 +26,7 @@ export async function register(params: RegisterParams) {
 
   console.log('register response raw:', res);
 
-  // Nếu backend trả về message lỗi thì ném lỗi để onError xử lý
-  if (res && res.message && !res.user) {
+  if (res && res.status === 'error') {
   throw new Error(res.message);
 }
 
