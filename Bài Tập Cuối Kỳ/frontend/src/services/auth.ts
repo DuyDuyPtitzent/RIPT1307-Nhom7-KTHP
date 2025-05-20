@@ -23,7 +23,14 @@ export async function register(params: RegisterParams) {
     data: params,
     skipErrorHandler: true,
   });
+
   console.log('register response raw:', res);
+
+  if (res && res.status === 'error') {
+  throw new Error(res.message);
+}
+
+
   return res;
 }
 

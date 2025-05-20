@@ -16,9 +16,15 @@ const Register: React.FC = () => {
       history.push('/auth/login');
     },
     onError: (error: any) => {
-      setLoading(false);
-      message.error(error.message || 'Đăng ký thất bại');
-    },
+  setLoading(false);
+  const errorMsg =
+    error?.response?.data?.message ||
+    (error?.data?.message ?? error.message) ||
+    'Đăng ký thất bại';
+  message.error(errorMsg);
+},
+
+
   });
 
  const onFinish = async (values: any) => {

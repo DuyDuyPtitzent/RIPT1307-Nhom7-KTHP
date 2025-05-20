@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Input, message, Row, Col } from 'antd';
+import { Table, Button, Input, message, Row, Col, Modal } from 'antd';
 import { useHistory } from 'umi';
 import { getResidents, deleteResident } from '../../services/residents';
 import TableActions from '../../components/TableActions';
 import { getCurrentUser } from '../../services/auth';
 import Header from '@/components/Header';
-
+import ResidentEditForm from '@/components/residents/ResidentEditForm';
+import ResidentAddForm from '@/components/residents/ResidentAddForm';
 
 const Residents: React.FC = () => {
   const [residents, setResidents] = useState([]);
@@ -13,7 +14,22 @@ const Residents: React.FC = () => {
   const [search, setSearch] = useState('');
   const [apartment, setApartment] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [editResidentId, setEditResidentId] = useState<number | null>(null);
+  const [addModalVisible, setAddModalVisible] = useState(false);
   const history = useHistory();
+
+  const fetchResidents = async () => {
+    setLoading(true);
+    try {
+      const residentsData = await getResidents({ search, apartment });
+      setResidents(residentsData || []);
+    } catch (error: any) {
+      message.error(error.message || 'Không thể tải danh sách cư dân');
+      setResidents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUserAndResidents = async () => {
@@ -21,12 +37,9 @@ const Residents: React.FC = () => {
       try {
         const user = await getCurrentUser();
         setIsAdmin(user.role === 'admin');
-
-        const residentsData = await getResidents({ search, apartment });
-        setResidents(residentsData || []);
+        await fetchResidents();
       } catch (error: any) {
         message.error(error.message || 'Không thể tải danh sách cư dân');
-        setResidents([]);
       } finally {
         setLoading(false);
       }
@@ -45,45 +58,44 @@ const Residents: React.FC = () => {
   };
 
   const columns = [
-  {
-    title: 'ID',
-    dataIndex: 'id',
-    key: 'id',
-  },
-  {
-    title: 'Họ tên',
-    dataIndex: 'full_name',   // sửa thành snake_case
-    key: 'full_name',
-  },
-  {
-    title: 'Email',
-    dataIndex: 'email',
-    key: 'email',
-  },
-  {
-    title: 'Số điện thoại',
-    dataIndex: 'phone_number',  // sửa thành snake_case
-    key: 'phone_number',
-  },
-  {
-    title: 'Số căn hộ',
-    dataIndex: 'apartment_number', // sửa thành snake_case
-    key: 'apartment_number',
-  },
-  {
-    title: 'Thao tác',
-    key: 'action',
-    render: (_: any, record: any) => (
-      <TableActions
-        onView={() => history.push(`/dashboard/residents/details/${record.id}`)}
-        onEdit={() => history.push(`/dashboard/residents/edit/${record.id}`)}
-        onDelete={() => handleDelete(record.id)}
-        isAdmin={isAdmin}
-      />
-    ),
-  },
-];
-
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Họ tên',
+      dataIndex: 'full_name',
+      key: 'full_name',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    {
+      title: 'Số điện thoại',
+      dataIndex: 'phone_number',
+      key: 'phone_number',
+    },
+    {
+      title: 'Số căn hộ',
+      dataIndex: 'apartment_number',
+      key: 'apartment_number',
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      render: (_: any, record: any) => (
+        <TableActions
+          onView={() => history.push(`/dashboard/residents/details/${record.id}`)}
+          onEdit={() => setEditResidentId(record.id)}
+          onDelete={() => handleDelete(record.id)}
+          isAdmin={isAdmin}
+        />
+      ),
+    },
+  ];
 
   return (
     <>
@@ -107,10 +119,7 @@ const Residents: React.FC = () => {
           </Col>
           {isAdmin && (
             <Col span={8}>
-              <Button
-                type="primary"
-                onClick={() => history.push('/dashboard/residents/add')}
-              >
+              <Button type="primary" onClick={() => setAddModalVisible(true)}>
                 Thêm cư dân
               </Button>
             </Col>
@@ -123,8 +132,42 @@ const Residents: React.FC = () => {
           loading={loading}
           pagination={{ pageSize: 10 }}
         />
+
+        <Modal
+          title="Chỉnh sửa cư dân"
+          open={!!editResidentId}
+          onCancel={() => setEditResidentId(null)}
+          footer={null}
+          destroyOnClose
+        >
+          {editResidentId && (
+            <ResidentEditForm
+              residentId={editResidentId}
+              onSuccess={async () => {
+                setEditResidentId(null);
+                await fetchResidents();
+              }}
+              onCancel={() => setEditResidentId(null)}
+            />
+          )}
+        </Modal>
+
+        <Modal
+          title="Thêm cư dân mới"
+          open={addModalVisible}
+          onCancel={() => setAddModalVisible(false)}
+          footer={null}
+          destroyOnClose
+        >
+          <ResidentAddForm
+            onSuccess={async () => {
+              setAddModalVisible(false);
+              await fetchResidents();
+            }}
+            onCancel={() => setAddModalVisible(false)}
+          />
+        </Modal>
       </div>
-     
     </>
   );
 };

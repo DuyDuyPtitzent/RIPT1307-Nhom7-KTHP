@@ -15,16 +15,12 @@
         component: '@/pages/Dashboard/Residents',
         access: 'user',
       },
-      {
-        path: '/dashboard/residents/add',
-        component: '@/pages/Residents/AddResident',
-        access: 'admin',
-      },
-      {
-        path: '/dashboard/residents/edit/:id',
-        component: '@/pages/Residents/EditResident',
-        access: 'admin',
-      },
+    { path: '/dashboard/materials',
+       component: '@/pages/Dashboard/Materials', 
+       access: 'admin' },
+        { path: '/materials/details/:id',
+           component: '@/pages/Materials/MaterialDetails',
+            access: 'admin' },
       {
         path: '/dashboard/residents/details/:id',
         component: '@/pages/Residents/ResidentDetails',
