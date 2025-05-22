@@ -18,20 +18,27 @@ export async function login(params: LoginParams) {
 
 
 export async function register(params: RegisterParams) {
-  const res = await request('/api/auth/register', {
-    method: 'POST',
-    data: params,
-    skipErrorHandler: true,
-  });
+  try {
+    const res = await request('/api/auth/register', {
+      method: 'POST',
+      data: params,
+      skipErrorHandler: true,
+    });
 
-  console.log('register response raw:', res);
+    // Nếu response có status là 'error' hoặc không có gì => ném lỗi
+    if (!res || res?.status === 'error' || res?.message === 'Email đã được đăng ký') {
+      throw new Error(res?.message || 'Đăng ký thất bại');
+    }
 
-  if (res && res.status === 'error') {
-  throw new Error(res.message);
-}
-
-
-  return res;
+    return res;
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message ||
+      error?.data?.message ||
+      error?.message ||
+      'Đăng ký thất bại';
+    throw new Error(message);
+  }
 }
 
 export async function forgotPassword(params: ForgotPasswordParams) {

@@ -4,9 +4,20 @@ import { pool } from '../config/database';
 import { sendEmail } from '../utils/email';
 import { Invoice } from '../models/Invoice';
 
-export const getInvoices = async (req: Request, res: Response) => {
+interface AuthRequest extends Request {
+  user?: { id: number; email: string; role: string; resident_id?: number };
+}
+
+export const getInvoices = async (req: AuthRequest, res: Response) => {
   try {
-    const { search, resident_id, status, billing_period } = req.query;
+    const { search, status, billing_period } = req.query;
+    let resident_id = req.query.resident_id as string | undefined;
+
+    // Nếu không phải admin, chỉ cho phép xem hóa đơn của chính cư dân
+    if (req.user?.role !== 'admin' && req.user?.resident_id) {
+      resident_id = req.user.resident_id.toString();
+    }
+
     let query = `
       SELECT i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount, i.status, i.due_date, i.created_at, i.updated_at
       FROM invoices i
@@ -44,7 +55,6 @@ export const getInvoices = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Lỗi máy chủ khi lấy danh sách hóa đơn' });
   }
 };
-
 export const getInvoiceById = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {

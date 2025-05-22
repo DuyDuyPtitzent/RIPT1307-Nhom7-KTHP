@@ -12,7 +12,7 @@ export const validateRequest = (req: Request, res: Response, next: NextFunction)
 };
 
 interface AuthRequest extends Request {
-  user?: { id: number; email: string; role: string };
+  user?: { id: number; email: string; role: string; resident_id?: number };
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -27,15 +27,26 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     if (err) {
       return res.status(403).json({ message: 'Token không hợp lệ' });
     }
-    req.user = user as { id: number; email: string; role: string };
+    req.user = user as { id: number; email: string; role: string; resident_id?: number };
     next();
   });
 };
 
-// Thêm mới: Kiểm tra role admin
 export const restrictToAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Chỉ admin được phép truy cập' });
   }
   next();
+};
+
+export const restrictToAdminOrResident = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Yêu cầu access token' });
+  }
+
+  if (req.user.role === 'admin' || req.user.resident_id) {
+    next();
+  } else {
+    return res.status(403).json({ message: 'Chỉ admin hoặc cư dân được phép truy cập' });
+  }
 };

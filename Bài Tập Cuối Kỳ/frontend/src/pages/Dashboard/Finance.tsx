@@ -43,11 +43,10 @@ const Finance: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
 
-  // Xử lý refresh từ AddInvoice
   useEffect(() => {
     if ((location.state as any)?.refresh) {
       fetchData();
-      history.replace({ ...location, state: {} }); // Xóa state sau khi xử lý
+      history.replace({ ...location, state: {} });
     }
   }, [location]);
 
@@ -55,17 +54,26 @@ const Finance: React.FC = () => {
     setLoading(true);
     try {
       const user = await getCurrentUser();
+      console.log('User data:', user);
       setIsAdmin(user.role === 'admin');
       if (user.role !== 'admin' && user.resident_id) {
         setResidentId(user.resident_id);
       }
 
-      const invoicesData = await getInvoices({ search, period, status, residentId });
-      if (!invoicesData || invoicesData.length === 0) {
-        message.info('Không tìm thấy hóa đơn nào khớp với bộ lọc');
+      // Gọi getInvoices cho cả admin và cư dân
+      try {
+        const invoicesData = await getInvoices({ search, period, status, residentId });
+        if (!invoicesData || invoicesData.length === 0) {
+          message.info('Không tìm thấy hóa đơn nào khớp với bộ lọc');
+        }
+        setInvoices(invoicesData || []);
+      } catch (invoiceError: any) {
+        console.error('Lỗi khi gọi getInvoices:', invoiceError);
+        message.error(invoiceError.response?.data?.message || 'Không thể tải danh sách hóa đơn');
+        setInvoices([]);
       }
-      setInvoices(invoicesData || []);
 
+      // Chỉ gọi các API admin nếu là admin
       if (user.role === 'admin') {
         try {
           const statsData = await getRevenueStats({
@@ -74,30 +82,26 @@ const Finance: React.FC = () => {
             period: statsPeriod,
           });
           setStats(statsData || { paid: [], unpaid: [], overdue: [] });
-        } catch (error: any) {
-          console.error('Error fetching stats:', error);
-          if (error.response?.status === 400) {
-            message.error('Khoảng thời gian thống kê không hợp lệ, vui lòng chọn lại');
-          } else {
-            message.error(error.message || 'Không thể tải thống kê doanh thu');
-          }
+        } catch (statsError: any) {
+          console.error('Lỗi khi gọi getRevenueStats:', statsError);
+          message.error(statsError.response?.data?.message || 'Không thể tải thống kê doanh thu');
         }
 
         try {
           await getOverdueInvoices();
-        } catch (error: any) {
-          console.error('Error fetching overdue invoices:', error);
-          message.error(error.message || 'Không thể kiểm tra hóa đơn quá hạn');
+        } catch (overdueError: any) {
+          console.error('Lỗi khi gọi getOverdueInvoices:', overdueError);
+          message.error(overdueError.response?.data?.message || 'Không thể kiểm tra hóa đơn quá hạn');
         }
       }
     } catch (error: any) {
-      console.error('Error fetching data:', error);
+      console.error('Lỗi tổng quát trong fetchData:', error);
       if (error.response?.status === 401 || error.response?.status === 403) {
         message.error('Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại');
         localStorage.removeItem('token');
         history.push('/auth/login');
       } else {
-        message.error(error.message || 'Không thể tải dữ liệu tài chính');
+        message.error(error.response?.data?.message || 'Không thể tải dữ liệu tài chính');
       }
       setInvoices([]);
       setStats({ paid: [], unpaid: [], overdue: [] });
@@ -115,9 +119,9 @@ const Finance: React.FC = () => {
       await deleteInvoice(id);
       message.success('Xóa hóa đơn thành công');
       setInvoices(invoices.filter((i) => i.id !== id));
-      fetchData(); // Làm mới thống kê
+      fetchData();
     } catch (error: any) {
-      message.error(error.message || 'Xóa hóa đơn thất bại');
+      message.error(error.response?.data?.message || 'Xóa hóa đơn thất bại');
     }
   };
 
@@ -129,9 +133,9 @@ const Finance: React.FC = () => {
         i.id === id ? { ...i, status: 'paid', updated_at: new Date().toISOString() } : i
       );
       setInvoices(updatedInvoices);
-      fetchData(); // Làm mới thống kê để cập nhật paid
+      fetchData();
     } catch (error: any) {
-      message.error(error.message || 'Xác nhận thanh toán thất bại');
+      message.error(error.response?.data?.message || 'Xác nhận thanh toán thất bại');
     }
   };
 
@@ -140,7 +144,7 @@ const Finance: React.FC = () => {
       const data = await getInvoiceById(id);
       setSelectedInvoice(data);
     } catch (error: any) {
-      message.error(error.message || 'Không thể tải thông tin hóa đơn');
+      message.error(error.response?.data?.message || 'Không thể tải thông tin hóa đơn');
     }
   };
 
@@ -160,9 +164,9 @@ const Finance: React.FC = () => {
     try {
       const invoicesData = await getInvoices({ search, period, status, residentId });
       setInvoices(invoicesData || []);
-      fetchData(); // Làm mới thống kê
+      fetchData();
     } catch (error: any) {
-      message.error(error.message || 'Không thể tải dữ liệu tài chính');
+      message.error(error.response?.data?.message || 'Không thể tải dữ liệu tài chính');
     }
   };
 
@@ -213,7 +217,6 @@ const Finance: React.FC = () => {
     },
   ];
 
-  // Tính tổng số tiền cho mỗi trạng thái
   const totalPaid = stats.paid.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
   const totalUnpaid = stats.unpaid.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
   const totalOverdue = stats.overdue.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
@@ -221,7 +224,7 @@ const Finance: React.FC = () => {
   return (
     <div className="authContainer">
       <h2>Quản lý tài chính</h2>
-      {!isAdmin && <OverdueWarning />}
+      
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={6}>
           <Input
@@ -259,7 +262,7 @@ const Finance: React.FC = () => {
         )}
       </Row>
 
-    {isAdmin && (
+      {isAdmin && (
   <Card title="Thống kê doanh thu" style={{ marginBottom: 16 }}>
     <Row gutter={16} style={{ marginBottom: 16 }}>
       <Col span={12}>
@@ -330,7 +333,6 @@ const Finance: React.FC = () => {
     </Row>
   </Card>
 )}
-
 
       <Table
         columns={columns}
