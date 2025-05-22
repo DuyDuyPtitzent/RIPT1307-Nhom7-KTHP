@@ -6,9 +6,10 @@ import {
   TeamOutlined,
   EnvironmentOutlined,
   LogoutOutlined,
-  ToolOutlined, // icon cho vật tư
+  ToolOutlined,
+  DollarOutlined, // Thêm icon cho tài chính
 } from '@ant-design/icons';
-import styles from '../components/AppLayout.less';
+import styles from './AppLayout.less';
 import { getCurrentUser } from '../services/auth';
 
 const { Header, Content } = Layout;
@@ -37,6 +38,7 @@ const AppLayout: React.FC = ({ children }) => {
 
   const menuItems = [
     { key: '/dashboard/residents', label: 'Dân cư', icon: <EnvironmentOutlined /> },
+    { key: '/dashboard/finance', label: 'Tài chính', icon: <DollarOutlined /> }, // Thêm icon
     ...(isAdmin
       ? [
           { key: '/dashboard/materials', label: 'Vật tư', icon: <ToolOutlined /> },
@@ -69,7 +71,6 @@ const AppLayout: React.FC = ({ children }) => {
         />
       </Header>
       <Content style={{ padding: '24px', minHeight: '80vh' }}>{children}</Content>
-
     </Layout>
   );
 };
