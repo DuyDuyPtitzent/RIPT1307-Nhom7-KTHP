@@ -20,7 +20,7 @@ const Header: React.FC = () => {
 
   return (
     <Menu
-      theme="dark"
+      theme="light"
       mode="horizontal"
       items={menuItems}
       selectedKeys={[history.location.pathname.split('/')[1]]}
