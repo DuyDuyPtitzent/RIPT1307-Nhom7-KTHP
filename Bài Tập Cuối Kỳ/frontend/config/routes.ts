@@ -7,25 +7,15 @@
 
   // Protected Dashboard Routes
   {
-    path: '/dashboard',
-    component: '@/components/AppLayout',
-    routes: [
-      {
-        path: '/dashboard/residents',
-        component: '@/pages/Dashboard/Residents',
-        access: 'user',
-      },
-    { path: '/dashboard/materials',
-       component: '@/pages/Dashboard/Materials', 
-       access: 'admin' },
-        { path: '/materials/details/:id',
-           component: '@/pages/Materials/MaterialDetails',
-            access: 'admin' },
-      {
-        path: '/dashboard/residents/details/:id',
-        component: '@/pages/Residents/ResidentDetails',
-        access: 'user',
-      },
+    path: '/dashboard',component: '@/components/AppLayout',routes: [
+      {path: '/dashboard/residents',component: '@/pages/Dashboard/Residents',access: 'user',},
+      { path: '/dashboard/materials',component: '@/pages/Dashboard/Materials', access: 'admin' },
+      { path: '/dashboard/finance', component: '@/pages/Dashboard/Finance', access: 'user' },
+{ path: '/dashboard/overdue', component: '@/pages/Dashboard/OverdueManagement', access: 'admin' },
+      { path: '/materials/details/:id',component: '@/pages/Materials/MaterialDetails',access: 'admin' },
+      {path: '/dashboard/residents/details/:id',component: '@/pages/Residents/ResidentDetails',access: 'user',},
+      // { path: '/invoices/details/:id', component: '@/pages/Invoices/InvoiceDetails', access: 'user' },
+       { path: '/dashboard/invoices/add', component: '@/pages/Invoices/AddInvoice', access: 'admin' },
     ],
   },
 

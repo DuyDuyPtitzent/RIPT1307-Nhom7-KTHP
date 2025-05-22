@@ -23,7 +23,7 @@ const request = extend({
 
 request.interceptors.request.use((url, options) => {
   const token = localStorage.getItem('token');
-  console.log('Token gửi trong request:', token);
+  console.log('Request URL:', url, 'Token:', token, 'Headers:', options.headers);
   if (token) {
     return {
       url,
