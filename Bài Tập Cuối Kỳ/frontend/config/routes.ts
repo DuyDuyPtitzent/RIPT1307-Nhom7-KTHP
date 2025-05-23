@@ -16,6 +16,7 @@
       {path: '/dashboard/residents/details/:id',component: '@/pages/Residents/ResidentDetails',access: 'user',},
       // { path: '/invoices/details/:id', component: '@/pages/Invoices/InvoiceDetails', access: 'user' },
        { path: '/dashboard/invoices/add', component: '@/pages/Invoices/AddInvoice', access: 'admin' },
+        { path: '/dashboard/vehicles', component: '@/pages/Dashboard/Vehicles', access: 'user' },
     ],
   },
 

@@ -3,27 +3,15 @@ import { Table, Button, Input, message, Row, Col, Select, DatePicker, Card, Stat
 import { useHistory, useLocation } from 'umi';
 import { getInvoices, deleteInvoice, getRevenueStats, confirmPayment, getInvoiceById, getOverdueInvoices } from '../../services/finance';
 import { getCurrentUser } from '../../services/auth';
-import OverdueWarning from '../../components/OverdueWarning';
+//import OverdueWarning from '../../components/OverdueWarning';
 import InvoiceDetailsModal from '../../components/invoice/InvoiceDetailsModal';
 import EditInvoiceModal from '../../components/invoice/EditInvoiceModal';
 import moment from 'moment';
-
+import { Invoice } from '@/services/types/finance';
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
 const Finance: React.FC = () => {
-  type Invoice = {
-    id: number;
-    resident_name: string;
-    apartment_number: string;
-    billing_period: string;
-    amount: number;
-    status: string;
-    due_date: string;
-    created_at: string;
-    updated_at?: string;
-  };
-
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<{
     paid: { period: string; total_revenue: number }[];

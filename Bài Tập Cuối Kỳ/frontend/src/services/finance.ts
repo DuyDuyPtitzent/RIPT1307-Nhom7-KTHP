@@ -1,6 +1,5 @@
 import request from '../utils/request';
 import { CreateInvoiceParams, UpdateInvoiceParams } from './types/finance';
-import { sendInvoiceCreatedNotification } from '@/utils/emailNotifications';
 
 export async function getInvoices(params?: {
   search?: string;
@@ -30,16 +29,6 @@ export async function createInvoice(params: CreateInvoiceParams): Promise<any> {
     data: params,
   });
   console.log('createInvoice response:', res);
-  try {
-    await sendInvoiceCreatedNotification({
-      resident_id: params.resident_id,
-      billing_period: params.billing_period,
-      amount: params.amount,
-      due_date: params.due_date,
-    });
-  } catch (emailError) {
-    console.error('Lỗi gửi thông báo hóa đơn:', emailError);
-  }
   return res;
 }
 

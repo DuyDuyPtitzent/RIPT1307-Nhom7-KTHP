@@ -1,8 +1,10 @@
 export interface Vehicle {
-    id: number;
-    license_plate: string;
-    type: 'car' | 'motorbike';
-    owner_id: number;
-    status: 'pending' | 'approved' | 'rejected';
-    created_at: Date;
-  }
+  id: number;
+  resident_id: number;
+  type: 'car' | 'motorcycle' | 'bicycle' | 'other';
+  license_plate: string;
+  owner_name: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: Date;
+  updated_at: Date;
+}

@@ -39,6 +39,7 @@ const AppLayout: React.FC = ({ children }) => {
   const menuItems = [
     { key: '/dashboard/residents', label: 'Dân cư', icon: <EnvironmentOutlined /> },
     { key: '/dashboard/finance', label: 'Tài chính', icon: <DollarOutlined /> }, // Thêm icon
+    { key: '/dashboard/vehicles', label: 'Phương tiện', icon: <IdcardOutlined /> },
     ...(isAdmin
       ? [
           { key: '/dashboard/materials', label: 'Vật tư', icon: <ToolOutlined /> },

@@ -12,4 +12,5 @@ export const config = {
   SMTP_PORT: parseInt(process.env.SMTP_PORT || '587'),
   SMTP_USER: process.env.SMTP_USER || 'Duydvdhtb172005@gmail.com',
   SMTP_PASS: process.env.SMTP_PASS || 'mnuq eoqd fqll zewp',
+
 };
