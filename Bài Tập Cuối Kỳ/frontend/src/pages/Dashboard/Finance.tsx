@@ -10,6 +10,8 @@ import moment from 'moment';
 import { Invoice } from '@/services/types/finance';
 const { Option } = Select;
 const { RangePicker } = DatePicker;
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip as PieTooltip, Legend as PieLegend } from 'recharts';
 
 const Finance: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -208,7 +210,19 @@ const Finance: React.FC = () => {
   const totalPaid = stats.paid.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
   const totalUnpaid = stats.unpaid.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
   const totalOverdue = stats.overdue.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
+  const chartData = stats.paid.map((item, index) => ({
+  period: item.period,
+  paid: item.total_revenue,
+  unpaid: stats.unpaid[index]?.total_revenue || 0,
+  overdue: stats.overdue[index]?.total_revenue || 0,
+}));
+  const pieData = [
+  { name: 'Đã thanh toán', value: Number(totalPaid) || 0 },
+  { name: 'Chưa thanh toán', value: Number(totalUnpaid) || 0 },
+  { name: 'Quá hạn', value: Number(totalOverdue) || 0 },
+];
 
+const COLORS = ['#52c41a', '#fa8c16', '#f5222d'];
   return (
     <div className="authContainer">
       <h2>Quản lý tài chính</h2>
@@ -318,7 +332,44 @@ const Finance: React.FC = () => {
           />
         </Card>
       </Col>
-    </Row>
+    </Row> {/* Biểu đồ cột */}
+    {/* Biểu đồ cột */}
+<ResponsiveContainer width="100%" height={300}>
+  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+    <XAxis dataKey="period" />
+    <YAxis />
+    <Tooltip formatter={(value: number) => value.toLocaleString('vi-VN') + ' VND'} />
+    <Legend />
+    <Bar dataKey="paid" fill="#52c41a" name="Đã thanh toán" />
+    <Bar dataKey="unpaid" fill="#fa8c16" name="Chưa thanh toán" />
+    <Bar dataKey="overdue" fill="#f5222d" name="Quá hạn" />
+  </BarChart>
+</ResponsiveContainer>
+
+{/* Biểu đồ hình tròn bên dưới */}
+<div style={{ height: 300, marginTop: 24 }}>
+  <ResponsiveContainer width="100%" height="100%">
+    <PieChart>
+      <Pie
+        data={pieData}
+        cx="50%"
+        cy="50%"
+        outerRadius={100}
+        fill="#8884d8"
+        dataKey="value"
+        label={({ name, percent }) =>
+          `${name}: ${(percent * 100).toFixed(0)}%`
+        }
+      >
+        {pieData.map((entry, index) => (
+          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+        ))}
+      </Pie>
+      <PieTooltip formatter={(value: number) => value.toLocaleString('vi-VN') + ' VND'} />
+      <PieLegend />
+    </PieChart>
+  </ResponsiveContainer>
+</div>
   </Card>
 )}
 
