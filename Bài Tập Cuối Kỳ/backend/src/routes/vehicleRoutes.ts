@@ -1,40 +1,43 @@
 import { Router } from 'express';
-  import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from '../controllers/vehicleController';
-  import { authenticateToken, restrictToAdmin } from '../middlewares/authMiddleware';
-  import { validateRequestBody } from '../middlewares/validateRequestBody';
-  import { body } from 'express-validator';
-  import { validateRequest } from '../middlewares/authMiddleware';
+import { body } from 'express-validator';
+import {
+  getVehicles,
+  getVehicleById,
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+  approveVehicle,
+  rejectVehicle,
+} from '../controllers/vehicleController';
+import { authenticateToken, restrictToAdmin } from '../middlewares/authMiddleware';
 
-  const router = Router();
+const router = Router();
 
-  router.get('/', authenticateToken, getVehicles);
+router.get('/', authenticateToken, getVehicles);
+router.get('/:id', authenticateToken, getVehicleById);
+router.post(
+  '/',
+  authenticateToken,
+  [
+    body('type').isIn(['car', 'motorcycle', 'bicycle', 'other']).withMessage('Loại phương tiện không hợp lệ'),
+    body('license_plate').notEmpty().withMessage('Biển số xe không được để trống'),
+    body('owner_name').notEmpty().withMessage('Tên chủ sở hữu không được để trống'),
+  ],
+  createVehicle
+);
+router.put(
+  '/:id',
+  authenticateToken,
+  [
+    body('type').optional().isIn(['car', 'motorcycle', 'bicycle', 'other']).withMessage('Loại phương tiện không hợp lệ'),
+    body('license_plate').optional().notEmpty().withMessage('Biển số xe không được để trống'),
+    body('owner_name').optional().notEmpty().withMessage('Tên chủ sở hữu không được để trống'),
+    body('status').optional().isIn(['pending', 'approved', 'rejected']).withMessage('Trạng thái không hợp lệ'),
+  ],
+  updateVehicle
+);
+router.delete('/:id', authenticateToken, restrictToAdmin, deleteVehicle);
+router.put('/:id/approve', authenticateToken, restrictToAdmin, approveVehicle);
+router.put('/:id/reject', authenticateToken, restrictToAdmin, rejectVehicle);
 
-  router.post(
-    '/',
-    validateRequestBody,
-    [
-      body('licensePlate').notEmpty().withMessage('Biển số là bắt buộc'),
-      body('type').isIn(['car', 'motorbike']).withMessage('Loại phương tiện không hợp lệ'),
-    ],
-    authenticateToken,
-    validateRequest,
-    createVehicle
-  );
-
-  router.put(
-    '/:id',
-    validateRequestBody,
-    [
-      body('licensePlate').notEmpty().withMessage('Biển số là bắt buộc'),
-      body('type').isIn(['car', 'motorbike']).withMessage('Loại phương tiện không hợp lệ'),
-      body('status').isIn(['pending', 'approved', 'rejected']).withMessage('Trạng thái không hợp lệ'),
-    ],
-    authenticateToken,
-    restrictToAdmin,
-    validateRequest,
-    updateVehicle
-  );
-
-  router.delete('/:id', authenticateToken, restrictToAdmin, deleteVehicle);
-
-  export default router;
+export default router;

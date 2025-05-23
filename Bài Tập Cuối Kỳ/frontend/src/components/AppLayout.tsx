@@ -3,7 +3,6 @@ import { Layout, Menu } from 'antd';
 import { useHistory, useLocation } from 'umi';
 import {
   IdcardOutlined,
-  TeamOutlined,
   EnvironmentOutlined,
   LogoutOutlined,
   ToolOutlined,
@@ -39,10 +38,10 @@ const AppLayout: React.FC = ({ children }) => {
   const menuItems = [
     { key: '/dashboard/residents', label: 'Dân cư', icon: <EnvironmentOutlined /> },
     { key: '/dashboard/finance', label: 'Tài chính', icon: <DollarOutlined /> }, // Thêm icon
+    { key: '/dashboard/vehicles', label: 'Phương tiện', icon: <IdcardOutlined /> },
     ...(isAdmin
       ? [
           { key: '/dashboard/materials', label: 'Vật tư', icon: <ToolOutlined /> },
-          { key: '/admin/users', label: 'Quản lý người dùng', icon: <TeamOutlined /> },
         ]
       : []),
     { key: 'profile', label: 'Hồ sơ', icon: <IdcardOutlined /> },

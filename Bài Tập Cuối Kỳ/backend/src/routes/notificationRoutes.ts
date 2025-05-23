@@ -1,11 +1,24 @@
-import { Router } from 'express';
-import { notifyInvoiceCreated, notifyInvoiceOverdue, notifyPaymentConfirmed } from '../controllers/notificationController';
-import { authenticateToken, restrictToAdmin } from '../middlewares/authMiddleware';
+// import { Router } from 'express';
+// import {
+//   notifyInvoiceCreated,
+//   notifyInvoiceOverdue,
+//   notifyPaymentConfirmed,
+//   notifyVehicleCreated,
+//   notifyVehicleStatusUpdated,
+// } from '../controllers/notificationController';
+// import { authenticateToken } from '../middlewares/authMiddleware';
 
-const router = Router();
+// const router = Router();
 
-router.post('/invoice-created', authenticateToken, restrictToAdmin, notifyInvoiceCreated);
-router.post('/invoice-overdue', authenticateToken, restrictToAdmin, notifyInvoiceOverdue);
-router.post('/payment-confirmed', authenticateToken, restrictToAdmin, notifyPaymentConfirmed);
+// router.use((req, res, next) => {
+//   console.log(`Notification request: ${req.method} ${req.path}`);
+//   next();
+// });
 
-export default router;
+// router.post('/invoice-created', authenticateToken, notifyInvoiceCreated);
+// router.post('/invoice-overdue', authenticateToken, notifyInvoiceOverdue);
+// router.post('/payment-confirmed', authenticateToken, notifyPaymentConfirmed);
+// router.post('/vehicle-created', authenticateToken, notifyVehicleCreated);
+// router.post('/vehicle-status-updated', authenticateToken, notifyVehicleStatusUpdated);
+
+// export default router;

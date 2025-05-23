@@ -12,7 +12,7 @@ const TrangChu = () => {
 				<div>
 					<b>{data.length} users</b>
 				</div>
-				<h1 className='title'>THỰC HÀNH LẬP TRÌNH WEB</h1>
+				<h1 className='title'>HỆ THỐNG QUẢN LÝ CƯ DÂN </h1>
 				<h2 className='sub-title'>{unitName.toUpperCase()}</h2>
 			</div>
 		</Card>

@@ -12,7 +12,7 @@ export const validateRequest = (req: Request, res: Response, next: NextFunction)
 };
 
 interface AuthRequest extends Request {
-  user?: { id: number; email: string; role: string };
+  user?: { id: number; email: string; role: string; resident_id?: number };
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -24,12 +24,16 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   }
 
   jwt.verify(token, config.JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: 'Token không hợp lệ' });
-    }
-    req.user = user as { id: number; email: string; role: string };
-    next();
-  });
+  if (err) {
+    return res.status(403).json({ message: 'Token không hợp lệ' });
+  }
+
+  // Đảm bảo gán đủ resident_id nếu có
+  req.user = user as { id: number; email: string; role: string; resident_id?: number };
+
+  next();
+});
+
 };
 
 // Thêm mới: Kiểm tra role admin

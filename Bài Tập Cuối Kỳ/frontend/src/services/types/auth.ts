@@ -4,6 +4,7 @@ export interface User {
   email: string;
   role: 'user' | 'admin';
   createdAt: string;
+   resident_id?: number | null; 
 }
 
 export interface AuthState {

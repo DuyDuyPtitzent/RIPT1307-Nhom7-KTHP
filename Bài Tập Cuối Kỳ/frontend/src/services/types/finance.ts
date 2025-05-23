@@ -5,7 +5,7 @@ export interface Invoice {
   apartment_number: string;
   billing_period: string;
   amount: number;
-  status: 'PAID' | 'UNPAID' | 'OVERDUE';
+  status: string;
   due_date: string;
   created_at: string;
   updated_at?: string;

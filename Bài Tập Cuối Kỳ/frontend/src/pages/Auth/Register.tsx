@@ -16,13 +16,13 @@ const Register: React.FC = () => {
       history.push('/auth/login');
     },
     onError: (error: any) => {
-  setLoading(false);
-  const errorMsg =
-    error?.response?.data?.message ||
-    (error?.data?.message ?? error.message) ||
-    'Đăng ký thất bại';
-  message.error(errorMsg);
-},
+      setLoading(false);
+      const errorMsg =
+        error?.response?.data?.message ||
+        (error?.data?.message ?? error.message) ||
+        'Đăng ký thất bại';
+      message.error(errorMsg);
+    },
 
 
   });
