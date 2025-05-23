@@ -29,6 +29,7 @@ export default function useVehicleModel() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [viewVehicle, setViewVehicle] = useState<any | null>(null);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const fetchVehicles = useCallback(async (residentId?: number) => {
     setLoading(true);
@@ -117,21 +118,23 @@ export default function useVehicleModel() {
 
   const openEditModal = async (id: number) => {
     setLoading(true);
+    setEditError(null);
+    setEditingVehicleId(id);
     try {
-      const vehicle = await withTimeout(getVehicleById(id), 5000); // Timeout 5s
+      const vehicle = await withTimeout(getVehicleById(id), 5);
       console.log('Fetched vehicle for editing:', vehicle);
-      if (!vehicle) {
+      if (!vehicle || typeof vehicle !== 'object' || !vehicle.id) {
         throw new Error('Dữ liệu phương tiện không hợp lệ');
       }
-      setEditingVehicleId(id);
+      // Đợi batching để đảm bảo đồng bộ
+      await new Promise(resolve => setTimeout(resolve, 0));
       setEditingVehicle(vehicle);
       setIsEditModalVisible(true);
     } catch (error: any) {
       console.error('Lỗi khi tải phương tiện:', error);
-      message.error(error.message || 'Lỗi khi tải thông tin phương tiện');
+      setEditError(error.message || 'Lỗi khi tải thông tin phương tiện');
       setEditingVehicle(null);
-      setEditingVehicleId(id); // Giữ ID để hiển thị lỗi trong form
-      setIsEditModalVisible(true); // Mở modal để hiển thị thông báo lỗi
+      setIsEditModalVisible(true); // Mở modal để hiển thị lỗi
     } finally {
       setLoading(false);
     }
@@ -141,6 +144,7 @@ export default function useVehicleModel() {
     setEditingVehicleId(null);
     setEditingVehicle(null);
     setIsEditModalVisible(false);
+    setEditError(null);
   };
 
   const openViewModal = async (id: number) => {
@@ -148,7 +152,7 @@ export default function useVehicleModel() {
     try {
       const vehicle = await withTimeout(getVehicleById(id), 5000);
       console.log('Fetched vehicle for viewing:', vehicle);
-      if (!vehicle) {
+      if (!vehicle || typeof vehicle !== 'object' || !vehicle.id) {
         throw new Error('Dữ liệu phương tiện không hợp lệ');
       }
       setViewVehicle(vehicle);
@@ -185,6 +189,7 @@ export default function useVehicleModel() {
     editingVehicleId,
     editingVehicle,
     isEditModalVisible,
+    editError,
     openEditModal,
     closeEditModal,
     viewVehicle,

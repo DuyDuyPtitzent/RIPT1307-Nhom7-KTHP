@@ -3,7 +3,6 @@ import { Layout, Menu } from 'antd';
 import { useHistory, useLocation } from 'umi';
 import {
   IdcardOutlined,
-  TeamOutlined,
   EnvironmentOutlined,
   LogoutOutlined,
   ToolOutlined,
@@ -43,7 +42,6 @@ const AppLayout: React.FC = ({ children }) => {
     ...(isAdmin
       ? [
           { key: '/dashboard/materials', label: 'Vật tư', icon: <ToolOutlined /> },
-          { key: '/admin/users', label: 'Quản lý người dùng', icon: <TeamOutlined /> },
         ]
       : []),
     { key: 'profile', label: 'Hồ sơ', icon: <IdcardOutlined /> },

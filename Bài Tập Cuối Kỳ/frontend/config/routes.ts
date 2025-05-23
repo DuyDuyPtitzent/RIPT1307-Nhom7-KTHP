@@ -1,4 +1,32 @@
 ﻿export default [
+  	
+ {
+		path: '/Dashboard/Residents',
+		name: 'Dân cư',
+		component: './Dashboard/Residents',
+		icon: 'EnvironmentOutlined',
+	},{
+		path: '/dashboard/finance',
+		name: 'Tài Chính',
+		component: './Dashboard/Finance',
+		icon: 'DollarOutlined',
+	},{
+		path: '/dashboard/vehicless',
+		name: 'Phương Tiện',
+		component: './Dashboard/Vehicles',
+		icon: 'AppstoreOutlined',
+	},{
+		path: '/dashboard/materials',
+		name: 'Vật Tư',
+		component: './Dashboard/Materials',
+    icon: 'ToolOutlined',
+	},{
+		path: '/logout',
+		name: 'Đăng xuất',
+		component: './Auth/Logout',
+    icon: 'LogoutOutlined',
+    
+	},
   // Public Auth Pages
   { path: '/auth/login', component: '@/pages/Auth/Login', layout: false },
   { path: '/auth/register', component: '@/pages/Auth/Register', layout: false },

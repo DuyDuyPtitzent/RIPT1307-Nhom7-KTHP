@@ -136,7 +136,8 @@ const Vehicles: React.FC = () => {
   ];
 
   return (
-    <div>
+    <div className="authContainer">
+      <h2>Quản lý phương tiện </h2>
       <Space style={{ marginBottom: 16 }}>
         <SearchBar
           onSearch={handleSearch}
