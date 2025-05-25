@@ -292,8 +292,6 @@ export const checkOverdueInvoices = async (req: Request, res: Response) => {
   }
 };
 
-;
-
 
 export const getRevenueStats = async (req: Request, res: Response) => {
   const { period, startDate, endDate } = req.query;

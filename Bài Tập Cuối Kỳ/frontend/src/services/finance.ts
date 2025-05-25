@@ -67,6 +67,7 @@ export async function getRevenueStats(params?: {
 }
 
 export async function getOverdueInvoices(): Promise<any> {
+  
   const res = await request('/api/finance/check-overdue', {
     method: 'POST',
   });

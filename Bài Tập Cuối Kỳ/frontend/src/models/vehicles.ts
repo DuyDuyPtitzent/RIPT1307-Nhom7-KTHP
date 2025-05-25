@@ -147,6 +147,7 @@ export default function useVehicleModel() {
     setEditError(null);
   };
 
+  
   const openViewModal = async (id: number) => {
     setLoading(true);
     try {

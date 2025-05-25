@@ -68,13 +68,21 @@ const AddInvoice: React.FC = () => {
           name="residentId"
           rules={[{ required: true, message: 'Vui lòng chọn cư dân' }]}
         >
-          <Select placeholder="Chọn cư dân">
-            {residents.map((resident) => (
-              <Select.Option key={resident.id} value={resident.id}>
-                {resident.full_name} (Căn hộ: {resident.apartment_number})
-              </Select.Option>
-            ))}
-          </Select>
+        <Select
+          showSearch
+          placeholder="Chọn cư dân"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            String(option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        >
+          {residents.map((resident) => (
+            <Select.Option key={resident.id} value={resident.id}>
+              {resident.full_name} (Căn hộ: {resident.apartment_number})
+            </Select.Option>
+          ))}
+        </Select>
+
         </Form.Item>
         <Form.Item
           label="Kỳ thu"
