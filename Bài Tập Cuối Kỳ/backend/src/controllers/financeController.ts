@@ -76,6 +76,7 @@ export const getInvoiceById = async (req: Request, res: Response) => {
   }
 };
 
+
 export const createInvoice = async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -84,27 +85,30 @@ export const createInvoice = async (req: Request, res: Response) => {
 
   const { resident_id, resident_name, apartment_number, billing_period, amount, due_date } = req.body;
   try {
-    // Kiểm tra resident_id tồn tại
-    const [residents] = await pool.query('SELECT id, email FROM residents WHERE id = ?', [resident_id]);
+    const [residents] = await pool.query('SELECT id, email, full_name, apartment_number FROM residents WHERE id = ?', [resident_id]);
     if ((residents as any[]).length === 0) {
       return res.status(404).json({ message: 'Không tìm thấy cư dân' });
     }
 
     const resident = (residents as any[])[0];
+    const dueDate = new Date(due_date);
+    const status = dueDate < new Date() ? 'overdue' : 'unpaid';
+
     const [result] = await pool.query(
       'INSERT INTO invoices (resident_id, resident_name, apartment_number, billing_period, amount, status, due_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-      [resident_id, resident_name, apartment_number, billing_period, amount, 'unpaid', due_date]
+      [resident_id, resident_name, apartment_number, billing_period, amount, status, due_date]
     );
 
     const newInvoiceId = (result as any).insertId;
 
-    // Gửi thông báo thanh toán qua email
+    // Gửi email thông báo
     try {
-      await sendEmail(
-        resident.email,
-        'Thông báo hóa đơn mới',
-        `Kính gửi ${resident_name},\n\nHóa đơn mới đã được tạo cho căn hộ ${apartment_number}.\nKỳ thu: ${billing_period}\nSố tiền: ${amount} VND\nHạn thanh toán: ${new Date(due_date).toLocaleDateString('vi-VN')}\n\nVui lòng thanh toán đúng hạn.\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
-      );
+      const subject = status === 'overdue' ? 'Cảnh báo hóa đơn quá hạn' : 'Thông báo hóa đơn mới';
+      const message = status === 'overdue'
+        ? `Kính gửi ${resident_name},\n\nHóa đơn mới cho căn hộ ${apartment_number} đã quá hạn.\nKỳ thu: ${billing_period}\nSố tiền: ${amount.toLocaleString('vi-VN')} VND\nHạn thanh toán: ${dueDate.toLocaleDateString('vi-VN')}\nVui lòng thanh toán ngay lập tức.\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
+        : `Kính gửi ${resident_name},\n\nHóa đơn mới đã được tạo cho căn hộ ${apartment_number}.\nKỳ thu: ${billing_period}\nSố tiền: ${amount.toLocaleString('vi-VN')} VND\nHạn thanh toán: ${dueDate.toLocaleDateString('vi-VN')}\nVui lòng thanh toán đúng hạn.\nTrân trọng,\nĐội ngũ Quản lý Dân cư`;
+
+      await sendEmail(resident.email, subject, message);
     } catch (emailError) {
       console.error('Lỗi gửi email thông báo hóa đơn:', emailError);
     }
@@ -288,9 +292,6 @@ export const checkOverdueInvoices = async (req: Request, res: Response) => {
   }
 };
 
-;
-
-// Các hàm khác giữ nguyên: getInvoices, getInvoiceById, createInvoice, updateInvoice, deleteInvoice, confirmPayment, checkOverdueInvoices
 
 export const getRevenueStats = async (req: Request, res: Response) => {
   const { period, startDate, endDate } = req.query;

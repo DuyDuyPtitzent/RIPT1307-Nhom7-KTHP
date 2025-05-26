@@ -3,9 +3,9 @@ import { Button, Popconfirm } from 'antd';
 import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 interface TableActionsProps {
-  onView: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+onView: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
   isAdmin: boolean;
 }
 

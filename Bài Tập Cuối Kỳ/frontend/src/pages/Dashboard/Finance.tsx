@@ -1,174 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Input, message, Row, Col, Select, DatePicker, Card, Statistic } from 'antd';
+// pages/finance/Finance.tsx
+import React, { useEffect } from 'react';
+import { Table, Button, Input, Row, Col, Select, DatePicker, Card, Statistic } from 'antd';
 import { useHistory, useLocation } from 'umi';
-import { getInvoices, deleteInvoice, getRevenueStats, confirmPayment, getInvoiceById, getOverdueInvoices } from '../../services/finance';
-import { getCurrentUser } from '../../services/auth';
-import OverdueWarning from '../../components/OverdueWarning';
+import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import moment from 'moment';
 import InvoiceDetailsModal from '../../components/invoice/InvoiceDetailsModal';
 import EditInvoiceModal from '../../components/invoice/EditInvoiceModal';
-import moment from 'moment';
+import ExportExcelSection from '@/components/invoice/ExportExcelSection';
+import { useFinanceModel } from '@/models/finance';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
 const Finance: React.FC = () => {
-  type Invoice = {
-    id: number;
-    resident_name: string;
-    apartment_number: string;
-    billing_period: string;
-    amount: number;
-    status: string;
-    due_date: string;
-    created_at: string;
-    updated_at?: string;
-  };
+  const {
+    invoices,
+    stats,
+    loading,
+    search,
+    setSearch,
+    period,
+    setPeriod,
+    status,
+    setStatus,
+    residentId,
+    statsPeriod,
+    setStatsPeriod,
+    dateRange,
+    setDateRange,
+    isAdmin,
+    selectedInvoice,
+    editingInvoiceId,
+    COLORS,
+    fetchData,
+    handleDelete,
+    handleConfirmPayment,
+    handleViewInvoice,
+    handleEditInvoice,
+    handleCloseDetails,
+    handleCloseEdit,
+    handleEditSuccess,
+  } = useFinanceModel();
 
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [stats, setStats] = useState<{
-    paid: { period: string; total_revenue: number }[];
-    unpaid: { period: string; total_revenue: number }[];
-    overdue: { period: string; total_revenue: number }[];
-  }>({ paid: [], unpaid: [], overdue: [] });
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [period, setPeriod] = useState('');
-  const [status, setStatus] = useState('');
-  const [residentId, setResidentId] = useState<number | undefined>();
-  const [statsPeriod, setStatsPeriod] = useState<'month' | 'quarter' | 'year'>('month');
-  const [dateRange, setDateRange] = useState<[string, string] | undefined>();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [editingInvoiceId, setEditingInvoiceId] = useState<number | null>(null);
   const history = useHistory();
   const location = useLocation();
 
   useEffect(() => {
-    if ((location.state as any)?.refresh) {
-      fetchData();
-      history.replace({ ...location, state: {} });
-    }
+    const loadData = async () => {
+      try {
+        if ((location.state as any)?.refresh) {
+          await fetchData({ search, period, status, residentId, dateRange, statsPeriod });
+          history.replace({ ...location, state: {} });
+        }
+      } catch (error: any) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          history.push('/auth/login');
+        }
+      }
+    };
+    loadData();
   }, [location]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const user = await getCurrentUser();
-      console.log('User data:', user);
-      setIsAdmin(user.role === 'admin');
-      if (user.role !== 'admin' && user.resident_id) {
-        setResidentId(user.resident_id);
-      }
-
-      // Gọi getInvoices cho cả admin và cư dân
-      try {
-        const invoicesData = await getInvoices({ search, period, status, residentId });
-        if (!invoicesData || invoicesData.length === 0) {
-          message.info('Không tìm thấy hóa đơn nào khớp với bộ lọc');
-        }
-        setInvoices(invoicesData || []);
-      } catch (invoiceError: any) {
-        console.error('Lỗi khi gọi getInvoices:', invoiceError);
-        message.error(invoiceError.response?.data?.message || 'Không thể tải danh sách hóa đơn');
-        setInvoices([]);
-      }
-
-      // Chỉ gọi các API admin nếu là admin
-      if (user.role === 'admin') {
-        try {
-          const statsData = await getRevenueStats({
-            startDate: dateRange?.[0],
-            endDate: dateRange?.[1],
-            period: statsPeriod,
-          });
-          setStats(statsData || { paid: [], unpaid: [], overdue: [] });
-        } catch (statsError: any) {
-          console.error('Lỗi khi gọi getRevenueStats:', statsError);
-          message.error(statsError.response?.data?.message || 'Không thể tải thống kê doanh thu');
-        }
-
-        try {
-          await getOverdueInvoices();
-        } catch (overdueError: any) {
-          console.error('Lỗi khi gọi getOverdueInvoices:', overdueError);
-          message.error(overdueError.response?.data?.message || 'Không thể kiểm tra hóa đơn quá hạn');
-        }
-      }
-    } catch (error: any) {
-      console.error('Lỗi tổng quát trong fetchData:', error);
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        message.error('Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại');
-        localStorage.removeItem('token');
-        history.push('/auth/login');
-      } else {
-        message.error(error.response?.data?.message || 'Không thể tải dữ liệu tài chính');
-      }
-      setInvoices([]);
-      setStats({ paid: [], unpaid: [], overdue: [] });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
+    const loadData = async () => {
+      try {
+        await fetchData({ search, period, status, residentId, dateRange, statsPeriod });
+      } catch (error: any) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          history.push('/auth/login');
+        }
+      }
+    };
+    loadData();
   }, [search, period, status, residentId, dateRange, statsPeriod]);
-
-  const handleDelete = async (id: number) => {
-    try {
-      await deleteInvoice(id);
-      message.success('Xóa hóa đơn thành công');
-      setInvoices(invoices.filter((i) => i.id !== id));
-      fetchData();
-    } catch (error: any) {
-      message.error(error.response?.data?.message || 'Xóa hóa đơn thất bại');
-    }
-  };
-
-  const handleConfirmPayment = async (id: number) => {
-    try {
-      await confirmPayment(id);
-      message.success('Xác nhận thanh toán thành công');
-      const updatedInvoices = invoices.map((i) =>
-        i.id === id ? { ...i, status: 'paid', updated_at: new Date().toISOString() } : i
-      );
-      setInvoices(updatedInvoices);
-      fetchData();
-    } catch (error: any) {
-      message.error(error.response?.data?.message || 'Xác nhận thanh toán thất bại');
-    }
-  };
-
-  const handleViewInvoice = async (id: number) => {
-    try {
-      const data = await getInvoiceById(id);
-      setSelectedInvoice(data);
-    } catch (error: any) {
-      message.error(error.response?.data?.message || 'Không thể tải thông tin hóa đơn');
-    }
-  };
-
-  const handleEditInvoice = (id: number) => {
-    setEditingInvoiceId(id);
-  };
-
-  const handleCloseDetails = () => {
-    setSelectedInvoice(null);
-  };
-
-  const handleCloseEdit = () => {
-    setEditingInvoiceId(null);
-  };
-
-  const handleEditSuccess = async () => {
-    try {
-      const invoicesData = await getInvoices({ search, period, status, residentId });
-      setInvoices(invoicesData || []);
-      fetchData();
-    } catch (error: any) {
-      message.error(error.response?.data?.message || 'Không thể tải dữ liệu tài chính');
-    }
-  };
 
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
@@ -200,7 +104,7 @@ const Finance: React.FC = () => {
     {
       title: 'Thao tác',
       key: 'action',
-      render: (_: any, record: Invoice) => (
+      render: (_: any, record: any) => (
         <span>
           <Button type="link" onClick={() => handleViewInvoice(record.id)}>Xem</Button>
           {isAdmin && (
@@ -221,10 +125,23 @@ const Finance: React.FC = () => {
   const totalUnpaid = stats.unpaid.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
   const totalOverdue = stats.overdue.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
 
+  const chartData = stats.paid.map((item, index) => ({
+    period: item.period,
+    paid: item.total_revenue,
+    unpaid: stats.unpaid[index]?.total_revenue || 0,
+    overdue: stats.overdue[index]?.total_revenue || 0,
+  }));
+
+  const pieData = [
+    { name: 'Đã thanh toán', value: Number(totalPaid) || 0 },
+    { name: 'Chưa thanh toán', value: Number(totalUnpaid) || 0 },
+    { name: 'Quá hạn', value: Number(totalOverdue) || 0 },
+  ];
+
   return (
     <div className="authContainer">
       <h2>Quản lý tài chính</h2>
-      
+
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={6}>
           <Input
@@ -263,76 +180,114 @@ const Finance: React.FC = () => {
       </Row>
 
       {isAdmin && (
-  <Card title="Thống kê doanh thu" style={{ marginBottom: 16 }}>
-    <Row gutter={16} style={{ marginBottom: 16 }}>
-      <Col span={12}>
-        <Select
-          style={{ width: '100%' }}
-          value={statsPeriod}
-          onChange={(value) => setStatsPeriod(value)}
-          allowClear
-          placeholder="Chọn khoảng thời gian"
-        >
-          <Option value="month">Theo tháng</Option>
-          <Option value="quarter">Theo quý</Option>
-          <Option value="year">Theo năm</Option>
-        </Select>
-      </Col>
-      <Col span={12}>
-        <RangePicker
-          format="YYYY-MM"
-          picker="month"
-          onChange={(dates) =>
-            dates && dates[0] && dates[1]
-              ? setDateRange([
-                  moment(dates[0]).format('YYYY-MM'),
-                  moment(dates[1]).format('YYYY-MM'),
-                ])
-              : setDateRange(undefined)
-          }
-        />
-      </Col>
-    </Row>
-    <Row gutter={16}>
-      <Col span={8}>
-        <Card>
-          <Statistic
-            title="Đã thanh toán"
-            value={Number(totalPaid)}
-            formatter={(value) =>
-              isNaN(Number(value)) ? '0 VND' : `${Number(value).toLocaleString('vi-VN')} VND`
-            }
-            valueStyle={{ color: '#52c41a' }}
-          />
+        <Card title="Thống kê doanh thu" style={{ marginBottom: 16 }}>
+          <Row gutter={16} style={{ marginBottom: 16 }}>
+            <Col span={12}>
+              <Select
+                style={{ width: '100%' }}
+                value={statsPeriod}
+                onChange={(value) => setStatsPeriod(value)}
+                allowClear
+                placeholder="Chọn khoảng thời gian"
+              >
+                <Option value="month">Theo tháng</Option>
+                <Option value="quarter">Theo quý</Option>
+                <Option value="year">Theo năm</Option>
+              </Select>
+            </Col>
+            <Col span={12}>
+              <RangePicker
+                format="YYYY-MM"
+                picker="month"
+                onChange={(dates) =>
+                  dates && dates[0] && dates[1]
+                    ? setDateRange([
+                        moment(dates[0]).format('YYYY-MM'),
+                        moment(dates[1]).format('YYYY-MM'),
+                      ])
+                    : setDateRange(undefined)
+                }
+              />
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Card>
+                <Statistic
+                  title="Đã thanh toán"
+                  value={Number(totalPaid)}
+                  formatter={(value) =>
+                    isNaN(Number(value)) ? '0 VND' : `${Number(value).toLocaleString('vi-VN')} VND`
+                  }
+                  valueStyle={{ color: '#52c41a' }}
+                />
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card>
+                <Statistic
+                  title="Chưa thanh toán"
+                  value={Number(totalUnpaid)}
+                  formatter={(value) =>
+                    isNaN(Number(value)) ? '0 VND' : `${Number(value).toLocaleString('vi-VN')} VND`
+                  }
+                  valueStyle={{ color: '#fa8c16' }}
+                />
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card>
+                <Statistic
+                  title="Quá hạn"
+                  value={Number(totalOverdue)}
+                  formatter={(value) =>
+                    isNaN(Number(value)) ? '0 VND' : `${Number(value).toLocaleString('vi-VN')} VND`
+                  }
+                  valueStyle={{ color: '#f5222d' }}
+                />
+              </Card>
+            </Col>
+          </Row>
+
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <XAxis dataKey="period" />
+              <YAxis />
+              <Tooltip formatter={(value: number) => value.toLocaleString('vi-VN') + ' VND'} />
+              <Legend />
+              <Bar dataKey="paid" fill="#52c41a" name="Đã thanh toán" />
+              <Bar dataKey="unpaid" fill="#fa8c16" name="Chưa thanh toán" />
+              <Bar dataKey="overdue" fill="#f5222d" name="Quá hạn" />
+            </BarChart>
+          </ResponsiveContainer>
+
+          <div style={{ height: 300, marginTop: 24 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) =>
+                    `${name}: ${(percent * 100).toFixed(0)}%`
+                  }
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value: number) => value.toLocaleString('vi-VN') + ' VND'} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Statistic
-            title="Chưa thanh toán"
-            value={Number(totalUnpaid)}
-            formatter={(value) =>
-              isNaN(Number(value)) ? '0 VND' : `${Number(value).toLocaleString('vi-VN')} VND`
-            }
-            valueStyle={{ color: '#fa8c16' }}
-          />
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Statistic
-            title="Quá hạn"
-            value={Number(totalOverdue)}
-            formatter={(value) =>
-              isNaN(Number(value)) ? '0 VND' : `${Number(value).toLocaleString('vi-VN')} VND`
-            }
-            valueStyle={{ color: '#f5222d' }}
-          />
-        </Card>
-      </Col>
-    </Row>
-  </Card>
-)}
+      )}
+
+      <ExportExcelSection />
 
       <Table
         columns={columns}
@@ -342,12 +297,6 @@ const Finance: React.FC = () => {
         pagination={{ pageSize: 10 }}
       />
 
-      {isAdmin && (
-        <Button type="link" onClick={() => history.push('/dashboard/overdue')} style={{ marginTop: 16 }}>
-          Xem hóa đơn quá hạn
-        </Button>
-      )}
-
       <InvoiceDetailsModal
         visible={!!selectedInvoice}
         invoice={selectedInvoice}
@@ -356,7 +305,7 @@ const Finance: React.FC = () => {
       <EditInvoiceModal
         invoiceId={editingInvoiceId}
         onClose={handleCloseEdit}
-        onSuccess={handleEditSuccess}
+        onSuccess={() => handleEditSuccess({ search, period, status, residentId })}
       />
     </div>
   );
