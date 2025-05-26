@@ -2,6 +2,10 @@ import { Request, Response } from 'express';
 import { pool } from '../config/database';
 import { sendEmail } from '../utils/email';
 
+interface AuthRequest extends Request {
+  user?: { id: number; email: string; role: string; resident_id?: number };
+}
+
 export const getMaterials = async (req: Request, res: Response) => {
   try {
     const { search, manager } = req.query;
@@ -48,28 +52,38 @@ export const getMaterialById = async (req: Request, res: Response) => {
   }
 };
 
-export const createMaterial = async (req: Request, res: Response) => {
+export const createMaterial = async (req: AuthRequest, res: Response) => {
   const { name, quantity, lowStockThreshold } = req.body;
   if (!name || quantity < 0) {
     return res.status(400).json({ message: 'Tên vật tư và số lượng là bắt buộc' });
   }
   try {
+    const managedBy = req.user?.id;
+    const [users] = await pool.query('SELECT id FROM users WHERE id = ?', [managedBy]);
+    if ((users as any[]).length === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy người quản lý' });
+    }
+
     const [result] = await pool.query(
       'INSERT INTO materials (name, quantity, low_stock_threshold, managed_by, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
-      [name, quantity, lowStockThreshold || 10, (req as any).user.id]
+      [name, quantity, lowStockThreshold || 10, managedBy]
     );
     const newMaterialId = (result as any).insertId;
 
     // Kiểm tra tồn kho thấp
     if (quantity <= (lowStockThreshold || 10)) {
+      const emailContent = `Vật tư "${name}" vừa được thêm với số lượng ${quantity}, thấp hơn ngưỡng ${lowStockThreshold || 10}.`;
+      await pool.query(
+        'INSERT INTO notifications (user_id, type, subject, content, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
+        [managedBy, 'email', 'Cảnh báo tồn kho thấp', emailContent, 'pending']
+      );
+
       try {
-        await sendEmail(
-          (req as any).user.email,
-          'Cảnh báo tồn kho thấp',
-          `Vật tư "${name}" vừa được thêm với số lượng ${quantity}, thấp hơn ngưỡng ${lowStockThreshold || 10}.`
-        );
+        await sendEmail(req.user!.email, 'Cảnh báo tồn kho thấp', emailContent);
+        await pool.query('UPDATE notifications SET status = ? WHERE content = ?', ['sent', emailContent]);
       } catch (emailError) {
         console.error('Lỗi gửi email:', emailError);
+        await pool.query('UPDATE notifications SET status = ? WHERE content = ?', ['failed', emailContent]);
       }
     }
 
@@ -80,7 +94,7 @@ export const createMaterial = async (req: Request, res: Response) => {
   }
 };
 
-export const updateMaterial = async (req: Request, res: Response) => {
+export const updateMaterial = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { name, quantity, lowStockThreshold } = req.body;
   if (!name || quantity < 0) {
@@ -91,21 +105,32 @@ export const updateMaterial = async (req: Request, res: Response) => {
     if ((materials as any[]).length === 0) {
       return res.status(404).json({ message: 'Không tìm thấy vật tư' });
     }
+
+    const managedBy = req.user?.id;
+    const [users] = await pool.query('SELECT id FROM users WHERE id = ?', [managedBy]);
+    if ((users as any[]).length === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy người quản lý' });
+    }
+
     await pool.query(
       'UPDATE materials SET name = ?, quantity = ?, low_stock_threshold = ?, managed_by = ?, updated_at = NOW() WHERE id = ?',
-      [name, quantity, lowStockThreshold || 10, (req as any).user.id, id]
+      [name, quantity, lowStockThreshold || 10, managedBy, id]
     );
 
     // Kiểm tra tồn kho thấp
     if (quantity <= (lowStockThreshold || 10)) {
+      const emailContent = `Vật tư "${name}" đã được cập nhật với số lượng ${quantity}, thấp hơn ngưỡng ${lowStockThreshold || 10}.`;
+      await pool.query(
+        'INSERT INTO notifications (user_id, type, subject, content, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
+        [managedBy, 'email', 'Cảnh báo tồn kho thấp', emailContent, 'pending']
+      );
+
       try {
-        await sendEmail(
-          (req as any).user.email,
-          'Cảnh báo tồn kho thấp',
-          `Vật tư "${name}" đã được cập nhật với số lượng ${quantity}, thấp hơn ngưỡng ${lowStockThreshold || 10}.`
-        );
+        await sendEmail(req.user!.email, 'Cảnh báo tồn kho thấp', emailContent);
+        await pool.query('UPDATE notifications SET status = ? WHERE content = ?', ['sent', emailContent]);
       } catch (emailError) {
         console.error('Lỗi gửi email:', emailError);
+        await pool.query('UPDATE notifications SET status = ? WHERE content = ?', ['failed', emailContent]);
       }
     }
 

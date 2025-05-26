@@ -26,7 +26,12 @@
 		component: './Auth/Logout',
     icon: 'LogoutOutlined',
     
-	},
+	},{
+        path: '/profile',
+        component: './Profile/UserProfile',
+        //access: 'user', // Cả user và admin đều có thể truy cập
+        name: 'Tài khoản',
+        icon: 'UserOutlined'},
   
 
 
