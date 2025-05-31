@@ -1,0 +1,759 @@
+
+// Variables
+@primary-blue: #2563eb;
+@primary-green: #16a34a;
+@primary-red: #dc2626;
+@gray-50: #f9fafb;
+@gray-100: #f3f4f6;
+@gray-200: #e5e7eb;
+@gray-300: #d1d5db;
+@gray-500: #6b7280;
+@gray-600: #4b5563;
+@gray-700: #374151;
+@gray-900: #111827;
+@blue-50: #eff6ff;
+@green-50: #f0fdf4;
+@yellow-50: #fefce8;
+@red-50: #fef2f2;
+@border-radius: 8px;
+@shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+
+// Container
+.container {
+  min-height: 100vh;
+  background-color: @gray-50;
+}
+
+.content-wrapper {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+
+.user-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.user-email {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.role-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: #e0f0ff;
+  color: #007bff;
+}
+
+.role-badge.admin {
+  background-color: #ffe0e0;
+  color: #ff3b3b;
+}
+
+// Loading
+.container-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: @gray-50;
+
+  .text-center {
+    text-align: center;
+  }
+
+  .spinner {
+    animation: spin 1s linear infinite;
+    border-radius: 50%;
+    height: 48px;
+    width: 48px;
+    border: 4px solid @gray-200;
+    border-bottom-color: @primary-blue;
+    margin: 0 auto;
+  }
+
+  .loading-text {
+    margin-top: 16px;
+    color: @gray-600;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Header Card
+.header-card {
+  background-color: white;
+  border-radius: @border-radius;
+  box-shadow: @shadow;
+  padding: 24px;
+  margin-bottom: 24px;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .avatar-container {
+        position: relative;
+
+        .avatar {
+          width: 64px;
+          height: 64px;
+          //background: linear-gradient(to right, #3b82f6, #a855f7);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 24px;
+          font-weight: bold;
+
+          .avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+          }
+        }
+
+        .avatar-preview {
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          width: 24px;
+          height: 24px;
+          background-color: @primary-green;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .spinner-small {
+            animation: spin 1s linear infinite;
+            border-radius: 50%;
+            height: 12px;
+            width: 12px;
+            border: 2px solid white;
+            border-bottom-color: transparent;
+          }
+        }
+      }
+
+      .user-name {
+        font-size: 24px;
+        font-weight: bold;
+        color: @gray-900;
+      }
+
+      .user-email {
+        color: @gray-600;
+      }
+
+      .role-badge {
+        display: inline-flex;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 9999px;
+
+        &.admin {
+          background-color: @red-50;
+          color: #991b1b;
+        }
+
+        &.user {
+          background-color: @blue-50;
+          color: #1e40af;
+        }
+      }
+    }
+
+
+    .join-date {
+      text-align: right;
+      font-size: 14px;
+      color: @gray-500;
+    }
+  }
+}
+
+// Navigation Tabs
+.nav-card {
+  background-color: white;
+  border-radius: @border-radius;
+  box-shadow: @shadow;
+  margin-bottom: 24px;
+
+  .nav-border {
+    border-bottom: 1px solid @gray-200;
+
+    .nav-tabs {
+      display: flex;
+      gap: 32px;
+      padding: 0 24px;
+      margin-bottom: -1px;
+
+      .nav-tab {
+       padding: 8px 6px;
+    border: none;               /* loại bỏ viền tất cả */
+    border-bottom: 2px solid transparent; /* chỉ viền dưới */
+    font-size: 14px;
+    font-weight: 500;
+    color: @gray-500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    background-color: white;
+
+        .icon {
+          width: 16px;
+          height: 16px;
+          margin-right: 8px;
+        }
+
+        &:hover {
+          color: @gray-700;
+          border-bottom-color: @gray-300;
+        }
+
+        &.active {
+          border-bottom-color: @primary-blue;
+          color: @primary-blue;
+        }
+      }
+    }
+  }
+}
+
+// Tab Content
+.tab-content {
+  margin-top: 24px;
+
+  .grid-profile,
+  .grid-rental {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+
+    @media (min-width: 1024px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .card {
+    background-color: white;
+    border-radius: @border-radius;
+    box-shadow: @shadow;
+    padding: 24px;
+
+    &.management {
+      padding: 0;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: @gray-900;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+
+      .icon-title {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+      }
+    }
+
+    .avatar-upload {
+      text-align: center;
+
+      .avatar-large {
+        width: 128px;
+        height: 128px;
+        //background: linear-gradient(to right, #3b82f6, #a855f7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 36px;
+        font-weight: bold;
+        margin: 0 auto 16px;
+        position: relative;
+        overflow: hidden;
+
+        .avatar-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+
+      .upload-button {
+        background-color: @primary-blue;
+        color: white;
+        padding: 8px 16px;
+        border-radius: @border-radius;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #1d4ed8;
+        }
+
+        .icon-button {
+          width: 16px;
+          height: 16px;
+          margin-right: 8px;
+        }
+
+        .hidden {
+          display: none;
+        }
+      }
+
+      .upload-info {
+        font-size: 14px;
+        color: @gray-500;
+        margin-top: 8px;
+      }
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .form-group {
+        .form-label {
+          display: block;
+          font-size: 14px;
+          font-weight: 500;
+          color: @gray-700;
+          margin-bottom: 4px;
+        }
+
+        .form-input,
+        .form-select {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid @gray-300;
+          border-radius: @border-radius;
+          font-size: 14px;
+          outline: none;
+          transition: border-color 0.2s, box-shadow 0.2s;
+
+          &:focus {
+            border-color: @primary-blue;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+          }
+        }
+      }
+
+      .button-base {
+  width: 100%;
+  padding: 8px 16px;
+  border-radius: @border-radius;
+  color: rgb(250, 248, 248);
+  font-size: 14px;
+  font-weight: 500;
+  border: none; /* ❗ Xóa viền */
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.submit-button {
+  .button-base();
+  background-color: @primary-red;
+
+  &:hover {
+    background-color: #e79908;
+  }
+}
+
+.extend-button {
+  .button-base();
+  background-color: @primary-green;
+
+  &:hover {
+    background-color: #15803d;
+  }
+}
+
+
+      .extension-info {
+        background-color: @blue-50;
+        padding: 16px;
+        border-radius: @border-radius;
+
+        .extension-title {
+          font-size: 14px;
+          font-weight: 500;
+          color: #1e3a8a;
+          margin-bottom: 8px;
+        }
+
+        .extension-text {
+          font-size: 14px;
+          color: #1e40af;
+        }
+      }
+    }
+
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid @gray-200;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .info-label {
+          color: @gray-600;
+        }
+
+        .info-value {
+          font-weight: 500;
+        }
+
+        .permission-status {
+          display: flex;
+          align-items: center;
+
+          &.enabled {
+            color: @primary-green;
+          }
+
+          &.disabled {
+            color: @primary-red;
+          }
+
+          .icon-status {
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+          }
+        }
+      }
+    }
+
+    .rental-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .rental-dates {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+
+        .date-card {
+          text-align: center;
+          padding: 16px;
+          border-radius: @border-radius;
+
+          &.start {
+            background-color: @blue-50;
+          }
+
+          &.end {
+            background-color: @green-50;
+          }
+
+          .date-label {
+            font-size: 14px;
+            color: @gray-600;
+          }
+
+          .date-value {
+            font-size: 18px;
+            font-weight: 600;
+
+            .start & {
+              color: @primary-blue;
+            }
+
+            .end & {
+              color: @primary-green;
+            }
+          }
+        }
+      }
+
+      .duration-card {
+        text-align: center;
+        padding: 16px;
+        background-color: @gray-50;
+        border-radius: @border-radius;
+
+        .duration-label {
+          font-size: 14px;
+          color: @gray-600;
+        }
+
+        .duration-value {
+          font-size: 24px;
+          font-weight: bold;
+          color: @gray-900;
+        }
+      }
+
+      .status-card {
+        text-align: center;
+        padding: 16px;
+        border-radius: @border-radius;
+        border: 1px solid;
+
+        &.expired {
+          background-color: @red-50;
+          border-color: #fecaca;
+        }
+
+        &.warning {
+          background-color: @yellow-50;
+          border-color: #fef08a;
+        }
+
+        &.active {
+          background-color: @green-50;
+          border-color: #bbf7d0;
+        }
+
+        .status-label {
+          font-size: 14px;
+          color: @gray-600;
+        }
+
+        .status-value {
+          font-size: 24px;
+          font-weight: bold;
+
+          .expired & {
+            color: @primary-red;
+          }
+
+          .warning & {
+            color: #ca8a04;
+          }
+
+          .active & {
+            color: @primary-green;
+          }
+        }
+      }
+    }
+
+    .no-rental {
+      text-align: center;
+      padding: 32px 0;
+      color: @gray-500;
+
+      .no-rental-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        color: @gray-300;
+      }
+    }
+
+    .no-permission {
+      text-align: center;
+      padding: 32px 0;
+
+      .no-permission-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        color: #fca5a5;
+      }
+
+      .no-permission-title {
+        font-size: 16px;
+        font-weight: 500;
+        color: @primary-red;
+        margin-bottom: 8px;
+      }
+
+      .no-permission-text {
+        font-size: 14px;
+        color: @gray-500;
+      }
+    }
+  }
+
+  .management-header {
+    padding: 24px;
+    border-bottom: 1px solid @gray-200;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    
+
+    .management-table {
+      width: 100%;
+      border-collapse: collapse;
+         border-collapse: collapse;
+         border: none;
+    
+
+      .table-header {
+        background-color: @gray-50;
+
+        .table-cell {
+          padding: 12px 24px;
+          text-align: left;
+          font-size: 12px;
+          font-weight: 500;
+          color: @gray-500;
+          text-transform: uppercase;
+          
+          
+        }
+      }
+
+      .table-body {
+        .table-row {
+          &:hover {
+            background-color: @gray-50;
+          }
+
+          .table-cell {
+            padding: 16px 24px;
+            font-size: 14px;
+          
+            
+
+            .user-cell {
+              display: flex;
+              align-items: center;
+
+              .user-avatar {
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(to right, #3b82f6, #a855f7);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+              }
+
+              .user-info {
+                margin-left: 16px;
+
+                .user-name {
+                  font-size: 14px;
+                  font-weight: 500;
+                  color: @gray-900;
+                }
+
+                .user-email {
+                  font-size: 14px;
+                  color: @gray-500;
+                }
+              }
+            }
+
+            .rental-status {
+              .status-text {
+                font-weight: 500;
+
+                &.expired {
+                  color: @primary-red;
+                }
+
+                &.active {
+                  color: @primary-green;
+                }
+              }
+            }
+
+            .no-rental-text {
+              font-size: 14px;
+              color: @gray-500;
+            }
+
+            .permission-status {
+              display: flex;
+              align-items: center;
+              font-size: 14px;
+
+              &.enabled {
+                color: @primary-green;
+              }
+
+              &.disabled {
+                color: @primary-red;
+              }
+
+              .icon-status {
+                width: 16px;
+                height: 16px;
+                margin-right: 4px;
+              }
+            }
+
+            .toggle-button {
+              padding: 4px 12px;
+              border-radius: 9999px;
+              font-size: 12px;
+              font-weight: 500;
+              transition: background-color 0.2s;
+                border: none;
+                outline: none; /* Tùy chọn, để xóa viền khi focus */
+                background-color: transparent; /* Nếu muốn nút không có nền */
+                cursor: pointer; /* Để con trỏ tay khi hover */
+              &.enable {
+                background-color: @green-50;
+                color: #15803d;
+
+                &:hover {
+                  background-color: #6beb98;
+                }
+              }
+
+              &.disable {
+                background-color: @red-50;
+                color: #b91c1c;
+
+                &:hover {
+                  background-color: #fecaca;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

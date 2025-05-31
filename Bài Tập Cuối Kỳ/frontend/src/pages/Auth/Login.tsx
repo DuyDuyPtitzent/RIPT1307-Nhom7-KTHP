@@ -1,52 +1,62 @@
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
-import { history } from 'umi';
-import { useAuth } from '@/models/auth';
-import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import '@/assets/styles/index.less';
-
+import { useHistory } from 'umi';
+import { login } from '../../services/auth';
+import styles from '../../assets/styles/index.less';
 
 const Login: React.FC = () => {
-  const { login } = useAuth();
+  const history = useHistory();
+  const [form] = Form.useForm();
 
-  const onFinish = async (values: { email: string; password: string }) => {
-    try {
-      await login(values.email, values.password);
-      message.success('Đăng nhập thành công');
-      history.push('/dashboard');
-    } catch (error: any) {
-      message.error(error.message || 'Đăng nhập thất bại');
-    }
-  };
+  const onFinish = async (values: any) => {
+  try {
+    const response = await login({
+      email: values.email,
+      password: values.password,
+    });
+
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('user', JSON.stringify(response.user));
+
+    message.success('Đăng nhập thành công');
+    history.push('/dashboard/residents');
+  } catch (error: any) {
+  console.error('Lỗi đăng nhập:', error);
+  const errMsg =
+    error.response?.data?.message || // lấy message backend trả về
+    error.message || // lỗi JS hoặc lỗi mạng
+    'Đăng nhập thất bại';
+  message.error(errMsg);
+}
+
+};
+
 
   return (
-    <div className="auth-container">
+    <div className={styles.authContainer}>
       <h2>Đăng nhập</h2>
-      <Form name="login" onFinish={onFinish} style={{ maxWidth: 400, margin: '0 auto' }}>
+      <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
+          label="Email"
           name="email"
           rules={[
             { required: true, message: 'Vui lòng nhập email' },
             { type: 'email', message: 'Email không hợp lệ' },
           ]}
         >
-          <Input prefix={<MailOutlined />} placeholder="Email" />
+          <Input />
         </Form.Item>
         <Form.Item
+          label="Mật khẩu"
           name="password"
           rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
         >
-          <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
+          <Input.Password />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" block>
             Đăng nhập
           </Button>
-        </Form.Item>
-        <Form.Item>
-          <a href="/auth/register">Chưa có tài khoản? Đăng ký</a>
-          <br />
-          <a href="/auth/forgot-password">Quên mật khẩu?</a>
         </Form.Item>
       </Form>
     </div>

@@ -1,85 +1,111 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
+import { useRequest } from 'umi';
 import { history } from 'umi';
-import { useAuth } from '@/models/auth';
-import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
-import '@/assets/styles/index.less';
-
+import { register } from '../../services/auth';
+import styles from '../../assets/styles/index.less';
 
 const Register: React.FC = () => {
-  const { register } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const onFinish = async (values: {
-    fullName: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }) => {
-    try {
-      await register(values.fullName, values.email, values.password, values.confirmPassword);
-      message.success('Đăng ký thành công');
+  const { run } = useRequest(register, {
+    manual: true,
+    onSuccess: () => {
+      setLoading(false);
+      message.success('Đăng ký thành công, vui lòng đăng nhập');
       history.push('/auth/login');
-    } catch (error: any) {
-      message.error(error.message || 'Đăng ký thất bại');
-    }
-  };
+    },
+    onError: (error: any) => {
+      setLoading(false);
+      const errorMsg =
+        error?.response?.data?.message ||
+        (error?.data?.message ?? error.message) ||
+        'Đăng ký thất bại';
+      message.error(errorMsg);
+    },
+
+
+  });
+
+ const onFinish = async (values: any) => {
+  setLoading(true);
+  await run({
+    fullName: values.fullName,
+    email: values.email,
+    password: values.password,
+    confirmPassword: values.confirmPassword, // Thêm dòng này
+  });
+};
+
 
   return (
-    <div className="auth-container">
+    <div className={styles.authContainer}>
       <h2>Đăng ký</h2>
-      <Form name="register" onFinish={onFinish} style={{ maxWidth: 400, margin: '0 auto' }}>
+      <Form
+        name="register"
+        layout="vertical"
+        onFinish={onFinish}
+      >
         <Form.Item
+          label="Họ tên"
           name="fullName"
-          rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+          rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
         >
-          <Input prefix={<UserOutlined />} placeholder="Họ tên" />
+          <Input />
         </Form.Item>
+
         <Form.Item
+          label="Email"
           name="email"
           rules={[
-            { required: true, message: 'Vui lòng nhập email' },
-            { type: 'email', message: 'Email không hợp lệ' },
+            { required: true, message: 'Vui lòng nhập email!' },
+            { type: 'email', message: 'Email không hợp lệ!' },
           ]}
         >
-          <Input prefix={<MailOutlined />} placeholder="Email" />
+          <Input />
         </Form.Item>
+
         <Form.Item
+          label="Mật khẩu"
           name="password"
-          rules={[
-            { required: true, message: 'Vui lòng nhập mật khẩu' },
-            { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
-          ]}
+          rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }, { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }]}
         >
-          <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
+          <Input.Password />
         </Form.Item>
+
         <Form.Item
+          label="Xác nhận mật khẩu"
           name="confirmPassword"
           dependencies={['password']}
           rules={[
-            { required: true, message: 'Vui lòng xác nhận mật khẩu' },
+            { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue('password') === value) {
                   return Promise.resolve();
                 }
-                return Promise.reject(new Error('Mật khẩu xác nhận không khớp'));
+                return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
               },
             }),
           ]}
         >
-          <Input.Password prefix={<LockOutlined />} placeholder="Xác nhận mật khẩu" />
+          <Input.Password />
         </Form.Item>
+
         <Form.Item>
-          <Button type="primary" htmlType="submit" block>
+          <Button type="primary" htmlType="submit" loading={loading} block>
             Đăng ký
           </Button>
         </Form.Item>
+
         <Form.Item>
-          <a href="/auth/login">Đã có tài khoản? Đăng nhập</a>
+          <Button type="link" onClick={() => history.push('/auth/login')}>
+            Đã có tài khoản? Đăng nhập
+          </Button>
         </Form.Item>
       </Form>
     </div>
   );
 };
 
-export default Register;
+export default Register

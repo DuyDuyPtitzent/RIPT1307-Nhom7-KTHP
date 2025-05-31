@@ -6,11 +6,11 @@ export const config = {
   DB_HOST: process.env.DB_HOST || 'localhost',
   DB_USER: process.env.DB_USER || 'root',
   DB_PASSWORD: process.env.DB_PASSWORD || '',
-  DB_NAME: process.env.DB_NAME || 'duan',
-  JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret',
-  SMTP_HOST: process.env.SMTP_HOST || 'smtp.ethereal.email',
-  SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
+  DB_NAME: process.env.DB_NAME || 'quanlycudan',
+  JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key',
+  SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || '587'),
   SMTP_USER: process.env.SMTP_USER || 'Duydvdhtb172005@gmail.com',
-  SMTP_PASS: process.env.SMTP_PASS || 'dousuizjilvvvajxt',
-  PORT: parseInt(process.env.PORT || '5000', 10),
+  SMTP_PASS: process.env.SMTP_PASS || 'mnuq eoqd fqll zewp',
+
 };
