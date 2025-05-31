@@ -2,28 +2,29 @@ import { extend } from 'umi-request';
 import { message } from 'antd';
 import { config } from './constants';
 
+// Tạo request instance
 const request = extend({
   prefix: config.API_URL,
   timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   errorHandler: (error: any) => {
+    // Bắt lỗi có response (thường là lỗi từ backend)
     if (error.response) {
       const status = error.response.status;
       const responseData = error.data;
       message.error(responseData?.message || `Có lỗi xảy ra! (Status: ${status})`);
       throw error;
     } else {
+      // Lỗi mạng hoặc lỗi không có phản hồi
       message.error(error.message || 'Lỗi kết nối mạng!');
       throw error;
     }
   },
 });
 
+// ✅ Interceptor thêm Authorization token nếu có
 request.interceptors.request.use((url, options) => {
   const token = localStorage.getItem('token');
-  console.log('Request URL:', url, 'Token:', token, 'Headers:', options.headers);
+
   if (token) {
     return {
       url,
@@ -36,13 +37,12 @@ request.interceptors.request.use((url, options) => {
       },
     };
   }
+
   return { url, options };
 });
 
-request.interceptors.response.use(async (response) => {
-  const data = await response.clone().json();
-  console.log('Raw response data from umi-request:', data);
-  return data; // Trả về dữ liệu JSON thay vì response
-});
+// ✅ KHÔNG xử lý clone() hay parse JSON ở đây
+// umi-request sẽ tự parse JSON nếu response trả về Content-Type: application/json
+request.interceptors.response.use((response) => response);
 
 export default request;

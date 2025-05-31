@@ -6,7 +6,7 @@ import residentRoutes from './routes/residentRoutes';
 import materialRoutes from './routes/materialRoutes';
 import financeRoutes from './routes/financeRoutes';
 import vehicleRoutes from './routes/vehicleRoutes';
-import statsRoutes from './routes/statsRoutes';
+//import statsRoutes from './routes/statsRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 
 const app = express();
@@ -18,13 +18,14 @@ app.use(cors({
 
 
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/residents', residentRoutes);
 app.use('/api/materials', materialRoutes); 
 app.use('/api/finance', financeRoutes);
 app.use('/api/vehicles', vehicleRoutes);
-app.use('/api/stats', statsRoutes);
+//app.use('/api/stats', statsRoutes);
 
 app.use(errorHandler);
 
