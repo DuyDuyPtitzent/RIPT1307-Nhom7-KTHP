@@ -26,6 +26,8 @@ router.post(
   validateRequestBody,
   [
     body('resident_id').isInt().withMessage('ID cư dân phải là số'),
+    body('resident_name').notEmpty().withMessage('Tên cư dân là bắt buộc'),
+    body('apartment_number').notEmpty().withMessage('Số căn hộ là bắt buộc'),
     body('billing_period').notEmpty().withMessage('Kỳ thu là bắt buộc'),
     body('amount').isFloat({ min: 0 }).withMessage('Số tiền phải là số không âm'),
     body('due_date').isDate().withMessage('Ngày đến hạn không hợp lệ'),
