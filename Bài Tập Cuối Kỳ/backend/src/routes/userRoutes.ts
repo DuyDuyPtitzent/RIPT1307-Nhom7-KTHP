@@ -1,26 +1,69 @@
 import { Router } from 'express';
-  import { updateUser, deleteUser } from '../controllers/userController';
-  import { authenticateToken, restrictToAdmin } from '../middlewares/authMiddleware';
-  import { validateRequestBody } from '../middlewares/validateRequestBody';
-  import { body } from 'express-validator';
-  import { validateRequest } from '../middlewares/authMiddleware';
+import {
+  getProfile,
+  updateAvatar,
+  changePassword,
+  extendRental,
+  toggleExtensionPermission,
+  getAllAccounts,
+} from '../controllers/usersController';
+import { authenticateToken, restrictToAdmin, validateRequest } from '../middlewares/authMiddleware';
+import { body } from 'express-validator';
 
-  const router = Router();
+const router = Router();
 
-  router.put(
-    '/:id',
-    validateRequestBody,
-    [
-      body('fullName').notEmpty().withMessage('Họ tên là bắt buộc'),
-      body('email').isEmail().withMessage('Email không hợp lệ'),
-      body('role').isIn(['admin', 'user']).withMessage('Vai trò không hợp lệ'),
-    ],
+// Lấy thông tin tài khoản cá nhân
+router.get('/profile', authenticateToken, getProfile);
+
+// Cập nhật ảnh đại diện (cả admin và user)
+router.put('/avatar', authenticateToken, updateAvatar);
+
+// Đổi mật khẩu (chỉ user)
+router.put(
+  '/change-password',
+  [
+    authenticateToken,
+    body('currentPassword').notEmpty().withMessage('Mật khẩu hiện tại là bắt buộc'),
+    body('newPassword').isLength({ min: 6 }).withMessage('Mật khẩu mới phải có ít nhất 6 ký tự'),
+    body('confirmPassword').custom((value, { req }) => {
+      if (value !== req.body.newPassword) {
+        throw new Error('Mật khẩu xác nhận không khớp');
+      }
+      return true;
+    }),
+    validateRequest,
+  ],
+  changePassword
+);
+
+// Gia hạn thời gian ở trọ (chỉ user)
+router.post(
+  '/extend-rental',
+  [
+    authenticateToken,
+    body('months').isInt({ min: 1, max: 12 }).withMessage('Số tháng gia hạn phải từ 1-12'),
+    validateRequest,
+  ],
+  extendRental
+);
+
+// Admin routes
+// Bật/tắt quyền gia hạn cho user
+router.put(
+  '/toggle-extension',
+  [
     authenticateToken,
     restrictToAdmin,
+body('userId').toInt().isInt().withMessage('User ID không hợp lệ'),
+
+body('enabled').toBoolean().isBoolean().withMessage('Trạng thái phải là true/false'),
+
     validateRequest,
-    updateUser
-  );
+  ],
+  toggleExtensionPermission
+);
 
-  router.delete('/:id', authenticateToken, restrictToAdmin, deleteUser);
+// Lấy danh sách tất cả tài khoản (chỉ admin)
+router.get('/all', [authenticateToken, restrictToAdmin], getAllAccounts);
 
-  export default router;
+export default router;

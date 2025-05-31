@@ -1,8 +1,10 @@
+// src/controllers/invoiceController.ts
+
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { pool } from '../config/database';
 import { sendEmail } from '../utils/email';
-import { Invoice } from '../models/Invoice';
+import { Invoice } from '../models/Invoice'; // Import interface Invoice từ file mới
 
 interface AuthRequest extends Request {
   user?: { id: number; email: string; role: string; resident_id?: number };
@@ -18,8 +20,12 @@ export const getInvoices = async (req: AuthRequest, res: Response) => {
       resident_id = req.user.resident_id.toString();
     }
 
+    // Cập nhật SELECT query để lấy tất cả các trường mới
     let query = `
-      SELECT i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount, i.status, i.due_date, i.created_at, i.updated_at
+      SELECT 
+        i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount, i.status, i.due_date, i.created_at, i.updated_at,
+        i.invoice_number, i.number_of_people, i.room_price, i.electricity_start, i.electricity_end, i.electricity_rate,
+        i.water_start, i.water_end, i.water_rate, i.internet_fee, i.service_fee_per_person
       FROM invoices i
     `;
     const params: any[] = [];
@@ -47,7 +53,7 @@ export const getInvoices = async (req: AuthRequest, res: Response) => {
       query += conditions.join(' AND ');
     }
 
-    query += ' ORDER BY i.id';
+    query += ' ORDER BY i.id DESC'; // Thường sắp xếp theo ID giảm dần để xem hóa đơn mới nhất
     const [invoices] = await pool.query(query, params);
     res.json(invoices);
   } catch (error) {
@@ -55,12 +61,17 @@ export const getInvoices = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Lỗi máy chủ khi lấy danh sách hóa đơn' });
   }
 };
+
 export const getInvoiceById = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
+    // Cập nhật SELECT query để lấy tất cả các trường mới
     const [invoices] = await pool.query(
       `
-      SELECT i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount, i.status, i.due_date, i.created_at, i.updated_at
+      SELECT 
+        i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount, i.status, i.due_date, i.created_at, i.updated_at,
+        i.invoice_number, i.number_of_people, i.room_price, i.electricity_start, i.electricity_end, i.electricity_rate,
+        i.water_start, i.water_end, i.water_rate, i.internet_fee, i.service_fee_per_person
       FROM invoices i
       WHERE i.id = ?
       `,
@@ -83,25 +94,59 @@ export const createInvoice = async (req: Request, res: Response) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { resident_id, resident_name, apartment_number, billing_period, amount, due_date } = req.body;
+  // Thêm các trường chi tiết mới từ req.body
+  const { 
+    resident_id, resident_name, apartment_number, billing_period, amount, due_date,
+    invoice_number, number_of_people, room_price, electricity_start, electricity_end, electricity_rate,
+    water_start, water_end, water_rate, internet_fee, service_fee_per_person
+  } = req.body;
+
   try {
+    // Kiểm tra cư dân
     const [residents] = await pool.query('SELECT id, email, full_name, apartment_number FROM residents WHERE id = ?', [resident_id]);
     if ((residents as any[]).length === 0) {
       return res.status(404).json({ message: 'Không tìm thấy cư dân' });
     }
 
     const resident = (residents as any[])[0];
+    // Kiểm tra resident_name và apartment_number (đã có)
+    if (!resident_name || !apartment_number) {
+      return res.status(400).json({ message: 'Tên cư dân và số căn hộ là bắt buộc' });
+    }
+
     const dueDate = new Date(due_date);
+    if (isNaN(dueDate.getTime())) {
+      return res.status(400).json({ message: 'Ngày đến hạn không hợp lệ' });
+    }
     const status = dueDate < new Date() ? 'overdue' : 'unpaid';
 
+    // Cập nhật INSERT query để thêm tất cả các trường mới
     const [result] = await pool.query(
-      'INSERT INTO invoices (resident_id, resident_name, apartment_number, billing_period, amount, status, due_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-      [resident_id, resident_name, apartment_number, billing_period, amount, status, due_date]
+      `INSERT INTO invoices (
+        resident_id, resident_name, apartment_number, billing_period, amount, status, due_date, created_at,
+        invoice_number, number_of_people, room_price, electricity_start, electricity_end, electricity_rate,
+        water_start, water_end, water_rate, internet_fee, service_fee_per_person
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        resident_id, resident_name, apartment_number, billing_period, amount, status, due_date,
+        invoice_number, number_of_people, room_price, electricity_start, electricity_end, electricity_rate,
+        water_start, water_end, water_rate, internet_fee, service_fee_per_person
+      ]
     );
 
     const newInvoiceId = (result as any).insertId;
 
-    // Gửi email thông báo
+    // Lấy hóa đơn vừa tạo để trả về (bao gồm cả các trường chi tiết)
+    const [newInvoice] = await pool.query(
+      `SELECT 
+        i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount, i.status, i.due_date, i.created_at, i.updated_at,
+        i.invoice_number, i.number_of_people, i.room_price, i.electricity_start, i.electricity_end, i.electricity_rate,
+        i.water_start, i.water_end, i.water_rate, i.internet_fee, i.service_fee_per_person
+      FROM invoices i WHERE id = ?`, 
+      [newInvoiceId]
+    );
+
+    // Gửi email thông báo (giữ nguyên logic cũ, sử dụng amount tổng)
     try {
       const subject = status === 'overdue' ? 'Cảnh báo hóa đơn quá hạn' : 'Thông báo hóa đơn mới';
       const message = status === 'overdue'
@@ -113,7 +158,7 @@ export const createInvoice = async (req: Request, res: Response) => {
       console.error('Lỗi gửi email thông báo hóa đơn:', emailError);
     }
 
-    res.status(201).json({ message: 'Thêm hóa đơn thành công', id: newInvoiceId });
+    res.status(201).json({ message: 'Thêm hóa đơn thành công', invoice: (newInvoice as any[])[0] });
   } catch (error) {
     console.error('Lỗi trong hàm createInvoice:', error);
     res.status(500).json({ message: 'Lỗi máy chủ khi thêm hóa đơn' });
@@ -127,7 +172,13 @@ export const updateInvoice = async (req: Request, res: Response) => {
   }
 
   const { id } = req.params;
-  const { resident_id, resident_name, apartment_number, billing_period, amount, status, due_date } = req.body;
+  // Thêm các trường chi tiết mới từ req.body
+  const { 
+    resident_id, resident_name, apartment_number, billing_period, amount, status, due_date,
+    invoice_number, number_of_people, room_price, electricity_start, electricity_end, electricity_rate,
+    water_start, water_end, water_rate, internet_fee, service_fee_per_person
+  } = req.body;
+
   try {
     const [invoices] = await pool.query('SELECT * FROM invoices WHERE id = ?', [id]);
     if ((invoices as any[]).length === 0) {
@@ -139,9 +190,35 @@ export const updateInvoice = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Không tìm thấy cư dân' });
     }
 
+    // Cập nhật UPDATE query để cập nhật tất cả các trường mới
     await pool.query(
-      'UPDATE invoices SET resident_id = ?, resident_name = ?, apartment_number = ?, billing_period = ?, amount = ?, status = ?, due_date = ?, updated_at = NOW() WHERE id = ?',
-      [resident_id, resident_name, apartment_number, billing_period, amount, status, due_date, id]
+      `UPDATE invoices SET 
+        resident_id = ?, 
+        resident_name = ?, 
+        apartment_number = ?, 
+        billing_period = ?, 
+        amount = ?, 
+        status = ?, 
+        due_date = ?, 
+        updated_at = NOW(),
+        invoice_number = ?,
+        number_of_people = ?,
+        room_price = ?,
+        electricity_start = ?,
+        electricity_end = ?,
+        electricity_rate = ?,
+        water_start = ?,
+        water_end = ?,
+        water_rate = ?,
+        internet_fee = ?,
+        service_fee_per_person = ?
+      WHERE id = ?`,
+      [
+        resident_id, resident_name, apartment_number, billing_period, amount, status, due_date,
+        invoice_number, number_of_people, room_price, electricity_start, electricity_end, electricity_rate,
+        water_start, water_end, water_rate, internet_fee, service_fee_per_person,
+        id
+      ]
     );
 
     res.json({ message: 'Cập nhật hóa đơn thành công' });
@@ -169,9 +246,12 @@ export const deleteInvoice = async (req: Request, res: Response) => {
 export const confirmPayment = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
+    // Cập nhật SELECT query để lấy thông tin email và các trường cần thiết cho email
     const [invoices] = await pool.query(
       `
-      SELECT i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount
+      SELECT 
+        i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount,
+        i.due_date, i.status -- Thêm due_date và status để kiểm tra lại
       FROM invoices i
       WHERE i.id = ?
       `,
@@ -194,10 +274,12 @@ export const confirmPayment = async (req: Request, res: Response) => {
     const resident = (residents as any[])[0];
     if (resident?.email) {
       try {
+        // Sử dụng due_date từ invoice để gửi email chính xác hơn
+        const dueDate = invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('vi-VN') : 'N/A';
         await sendEmail(
           resident.email,
           'Xác nhận thanh toán',
-          `Kính gửi ${invoice.resident_name},\n\nHóa đơn cho căn hộ ${invoice.apartment_number}, kỳ thu ${invoice.billing_period} với số tiền ${invoice.amount} VND đã được thanh toán thành công.\n\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
+          `Kính gửi ${invoice.resident_name},\n\nHóa đơn cho căn hộ ${invoice.apartment_number}, kỳ thu ${invoice.billing_period} với số tiền ${invoice.amount} VND (hạn thanh toán: ${dueDate}) đã được thanh toán thành công.\n\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
         );
       } catch (emailError) {
         console.error('Lỗi gửi email xác nhận thanh toán:', emailError);
@@ -217,9 +299,11 @@ export const checkOverdueInvoices = async (req: Request, res: Response) => {
     await pool.query('SELECT 1');
     console.log('Bắt đầu kiểm tra hóa đơn quá hạn');
 
+    // Cập nhật SELECT query để lấy các trường cần thiết cho email
     const [invoices] = await pool.query(
       `
-      SELECT i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount, i.due_date
+      SELECT 
+        i.id, i.resident_id, i.resident_name, i.apartment_number, i.billing_period, i.amount, i.due_date
       FROM invoices i
       WHERE i.status = 'unpaid' AND i.due_date < NOW()
       `

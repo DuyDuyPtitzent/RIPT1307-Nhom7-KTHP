@@ -6,7 +6,7 @@ export const config = {
   DB_HOST: process.env.DB_HOST || 'localhost',
   DB_USER: process.env.DB_USER || 'root',
   DB_PASSWORD: process.env.DB_PASSWORD || '',
-  DB_NAME: process.env.DB_NAME || 'duan',
+  DB_NAME: process.env.DB_NAME || 'quanlycudan',
   JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key',
   SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
   SMTP_PORT: parseInt(process.env.SMTP_PORT || '587'),
