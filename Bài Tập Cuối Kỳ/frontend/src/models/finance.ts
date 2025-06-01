@@ -10,15 +10,16 @@ import { saveAs } from 'file-saver';
 import moment from 'moment';
 import { useHistory } from 'umi'; // Thêm useHistory nếu bạn muốn chuyển hướng trong hook
 
+// Định nghĩa kiểu dữ liệu cho thống kê doanh thu
 interface RevenueStats {
   paid: { period: string; total_revenue: number }[];
   unpaid: { period: string; total_revenue: number }[];
   overdue: { period: string; total_revenue: number }[];
 }
 
-// KHÔNG THAY ĐỔI useFinanceModel ĐÃ CÓ
+// KHÔNG THAY ĐỔI useFinanceModel 
 export const useFinanceModel = () => {
-  // States for Finance (GIỮ NGUYÊN)
+  // State cho các dữ liệu tài chính 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<RevenueStats>({ paid: [], unpaid: [], overdue: [] });
   const [loading, setLoading] = useState(false);
@@ -32,28 +33,30 @@ export const useFinanceModel = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [editingInvoiceId, setEditingInvoiceId] = useState<number | null>(null);
 
-  // States for ExportExcelSection (GIỮ NGUYÊN)
+  // State cho phần xuất Excel 
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-  // States for EditInvoiceModal (GIỮ NGUYÊN)
+  // State cho EditInvoiceModal 
   const [residents, setResidents] = useState<any[]>([]);
   const [editLoading, setEditLoading] = useState(false);
 
-  // Constants (GIỮ NGUYÊN)
+  // Mảng màu sắc cho biểu đồ trạng thái hóa đơn
   const COLORS = ['#52c41a', '#fa8c16', '#f5222d'];
 
-  // Handlers for ExportExcelSection (GIỮ NGUYÊN)
+  // Xử lý khi chọn trạng thái để xuất Excel
   const handleSelectChange = (value: string) => {
     setSelectedStatus(value);
     setModalVisible(true);
   };
 
+  // Xác nhận xuất Excel
   const handleConfirmExport = (exportToExcel: (status: string, invoices: Invoice[]) => void) => {
     exportToExcel(selectedStatus, invoices);
     setModalVisible(false);
   };
 
+  // Hàm xuất dữ liệu hóa đơn ra file Excel
   const exportToExcel = (filterStatus: string, invoices: Invoice[]) => {
     let filteredInvoices = invoices;
 
@@ -80,6 +83,7 @@ export const useFinanceModel = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Hóa đơn');
 
+    // Map tên file theo trạng thái
     const fileNameMap: any = {
       paid: 'hoa_don_da_thanh_toan.xlsx',
       unpaid: 'hoa_don_chua_thanh_toan.xlsx',
@@ -93,7 +97,7 @@ export const useFinanceModel = () => {
     saveAs(blob, fileName);
   };
 
-  // Handlers for EditInvoiceModal (GIỮ NGUYÊN)
+  // Hàm lấy dữ liệu hóa đơn để sửa
   const fetchEditInvoiceData = async (invoiceId: number | null, form: any) => {
     if (!invoiceId) return;
     setEditLoading(true);
@@ -102,7 +106,7 @@ export const useFinanceModel = () => {
       const residentsData = await getResidents();
       setResidents(residentsData || []);
 
-      // Patch các trường null/undefined về 0 hoặc chuỗi rỗng
+      // Gán giá trị mặc định cho các trường null/undefined
       form.setFieldsValue({
         resident_id: invoice.resident_id,
         billing_period: invoice.billing_period ? moment(invoice.billing_period, 'YYYY-MM') : undefined,
@@ -131,6 +135,7 @@ export const useFinanceModel = () => {
     }
   };
 
+  // Hàm xử lý khi cập nhật hóa đơn
   const onFinishEditInvoice = async (invoiceId: number | null, values: any, residents: any[], onSuccess: () => void, onClose: () => void) => {
     if (!invoiceId) return;
     setEditLoading(true);
@@ -169,7 +174,7 @@ export const useFinanceModel = () => {
     }
   };
 
-  // Handlers for Finance (GIỮ NGUYÊN)
+  // Hàm lấy dữ liệu tài chính 
   const fetchData = async (params: {
     search: string;
     period: string;
@@ -234,6 +239,7 @@ export const useFinanceModel = () => {
     }
   };
 
+  // Hàm xóa hóa đơn
   const handleDelete = async (id: number) => {
     try {
       await deleteInvoice(id);
@@ -244,6 +250,7 @@ export const useFinanceModel = () => {
     }
   };
 
+  // Hàm xác nhận thanh toán hóa đơn
   const handleConfirmPayment = async (id: number) => {
     try {
       await confirmPayment(id);
@@ -260,7 +267,7 @@ export const useFinanceModel = () => {
     }
   };
 
-
+  // Hàm xem chi tiết hóa đơn
   const handleViewInvoice = async (id: number) => {
     try {
       const data = await getInvoiceById(id);
@@ -270,18 +277,22 @@ export const useFinanceModel = () => {
     }
   };
 
+  // Hàm mở modal sửa hóa đơn
   const handleEditInvoice = (id: number) => {
     setEditingInvoiceId(id);
   };
 
+  // Hàm đóng modal chi tiết hóa đơn
   const handleCloseDetails = () => {
     setSelectedInvoice(null);
   };
 
+  // Hàm đóng modal sửa hóa đơn
   const handleCloseEdit = () => {
     setEditingInvoiceId(null);
   };
 
+  // Hàm xử lý sau khi sửa hóa đơn thành công
   const handleEditSuccess = async (params: {
     search: string;
     period: string;
@@ -308,14 +319,14 @@ export const useFinanceModel = () => {
   };
 };
 
-// --- Custom Hook for AddInvoiceForm Logic (MỚI THÊM) ---
+// --- Custom Hook cho logic form Thêm hóa đơn ---
 export const useAddInvoiceFormLogic = () => {
   const [submitting, setSubmitting] = useState(false);
-  const [residents, setResidents] = useState<Resident[]>([]); // AddInvoiceForm's own residents state
-  const [loading, setLoading] = useState(false); // AddInvoiceForm's own loading state
+  const [residents, setResidents] = useState<Resident[]>([]); // State cư dân riêng cho AddInvoiceForm
+  const [loading, setLoading] = useState(false); // State loading riêng cho AddInvoiceForm
   const history = useHistory();
 
-  // Tạo số hóa đơn ngẫu nhiên (được tái sử dụng từ AddInvoice.tsx ban đầu)
+  // Hàm tạo số hóa đơn ngẫu nhiên (tái sử dụng từ AddInvoice.tsx ban đầu)
   const generateInvoiceNumber = () => {
     const date = new Date();
     const year = date.getFullYear();
@@ -324,10 +335,10 @@ export const useAddInvoiceFormLogic = () => {
     return `HD${year}${month}${random}`;
   };
 
-  // Hàm ép kiểu về số, nếu không hợp lệ trả về 0 (được tái sử dụng từ AddInvoice.tsx ban đầu)
+  // Hàm ép kiểu về số, nếu không hợp lệ trả về 0 (tái sử dụng từ AddInvoice.tsx ban đầu)
   const safeNumber = (v: any) => { const n = Number(v); return isNaN(n) ? 0 : n; };
 
-  // Hàm xử lý khi gửi form (được tái sử dụng từ AddInvoice.tsx ban đầu)
+  // Hàm xử lý khi gửi form (tái sử dụng từ AddInvoice.tsx ban đầu)
   const handleAddInvoiceSubmit = async (values: InvoiceFormData, totalAmount: number, form: any) => {
     setSubmitting(true);
     try {
@@ -377,7 +388,7 @@ export const useAddInvoiceFormLogic = () => {
     }
   };
 
-  // Hàm xử lý khi đặt lại form (được tái sử dụng từ AddInvoice.tsx ban đầu)
+  // Hàm xử lý khi đặt lại form (tái sử dụng từ AddInvoice.tsx ban đầu)
   const handleAddInvoiceReset = (form: any) => {
     form.resetFields();
     form.setFieldsValue({
@@ -387,7 +398,7 @@ export const useAddInvoiceFormLogic = () => {
     message.info('Đã đặt lại form');
   };
 
-  // Hàm xử lý khi chọn cư dân (được tái sử dụng từ AddInvoice.tsx ban đầu)
+  // Hàm xử lý khi chọn cư dân (tái sử dụng từ AddInvoice.tsx ban đầu)
   const handleAddInvoiceResidentChange = (residentId: number, form: any) => {
     const selectedResident = residents.find((r) => r.id === residentId);
     console.log('Cư dân được chọn:', selectedResident);
