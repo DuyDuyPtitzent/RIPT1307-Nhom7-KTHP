@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, message, Switch } from 'antd'; // Import Switch
 import { useRequest } from 'umi';
 import { history } from 'umi';
 import { register } from '../../services/auth';
@@ -7,6 +7,7 @@ import styles from '../../assets/styles/index.less';
 
 const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // Thêm trạng thái mới cho công tắc
 
   const { run } = useRequest(register, {
     manual: true,
@@ -23,20 +24,22 @@ const Register: React.FC = () => {
         'Đăng ký thất bại';
       message.error(errorMsg);
     },
-
-
   });
 
- const onFinish = async (values: any) => {
-  setLoading(true);
-  await run({
-    fullName: values.fullName,
-    email: values.email,
-    password: values.password,
-    confirmPassword: values.confirmPassword, // Thêm dòng này
-  });
-};
+  const onFinish = async (values: any) => {
+    setLoading(true);
+    await run({
+      fullName: values.fullName,
+      email: values.email,
+      password: values.password,
+      confirmPassword: values.confirmPassword,
+      role: isAdmin ? 'admin' : 'user', // Truyền vai trò dựa trên trạng thái công tắc
+    });
+  };
 
+  const handleAdminSwitchChange = (checked: boolean) => {
+    setIsAdmin(checked);
+  };
 
   return (
     <div className={styles.authContainer}>
@@ -92,6 +95,11 @@ const Register: React.FC = () => {
           <Input.Password />
         </Form.Item>
 
+        {/* Thêm Form.Item cho nút bật tắt quyền Admin */}
+        <Form.Item label="Đăng ký với quyền Admin" valuePropName="checked">
+          <Switch checked={isAdmin} onChange={handleAdminSwitchChange} />
+        </Form.Item>
+
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading} block>
             Đăng ký
@@ -108,4 +116,4 @@ const Register: React.FC = () => {
   );
 };
 
-export default Register
+export default Register;
