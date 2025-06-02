@@ -363,12 +363,12 @@ const AddInvoiceForm: React.FC = () => {
           {/* Tổng hợp chi phí */}
           <Descriptions title="Tổng hợp chi phí" bordered column={1} className="mb-4">
             <Descriptions.Item label="Tiền phòng">
-              {(values?.room_price || 0).toLocaleString('vi-VN')} VNĐ
+              {(values?.roomPrice || 0).toLocaleString('vi-VN')} VNĐ
             </Descriptions.Item>
             <Descriptions.Item label="Tiền điện">{electricityAmount.toLocaleString('vi-VN')} VNĐ</Descriptions.Item>
             <Descriptions.Item label="Tiền nước">{waterAmount.toLocaleString('vi-VN')} VNĐ</Descriptions.Item>
             <Descriptions.Item label="Phí internet">
-              {(values?.internet_fee || 0).toLocaleString('vi-VN')} VNĐ
+              {(values?.internetFee || 0).toLocaleString('vi-VN')} VNĐ
             </Descriptions.Item>
             <Descriptions.Item label="Phí dịch vụ">
               {serviceAmount.toLocaleString('vi-VN')} VNĐ
