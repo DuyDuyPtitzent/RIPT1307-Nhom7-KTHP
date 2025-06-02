@@ -1,28 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { User, Camera, Lock, Calendar, Settings, Users, CheckCircle, XCircle } from 'lucide-react';
+import React, {useEffect, } from 'react';
+import { User, Camera, Lock, Calendar, Settings, Users, XCircle } from 'lucide-react';
 import { message, Layout, Spin, Card, Avatar, Tabs, Form, Input, Select, Button, Table, Tag, Switch } from 'antd';
 import { getProfile, updateAvatar, changePassword, extendRental, getAllAccounts, toggleExtensionPermission } from '@/services/user';
-import { UserProfile, Account, PasswordForm, ExtendForm } from '@/services/types/user';
+import {  Account, PasswordForm, ExtendForm } from '@/services/types/user';
 import { config } from '../../utils/constants';
 
+import { useProfileModel } from '@/models/profile';
 const { Content } = Layout;
 const { TabPane } = Tabs;
 
 const AccountPage: React.FC = () => {
-  const [userData, setUserData] = useState<UserProfile | null>(null);
-  const [allAccounts, setAllAccounts] = useState<Account[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'profile' | 'rental' | 'management'>('profile');
-  const [passwordFormAnt] = Form.useForm();
-  const [extendFormAnt] = Form.useForm();
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  // Thêm ref cho input file để reset sau khi upload
-  const avatarInputRef = useRef<HTMLInputElement>(null);
-  // Thêm key để force re-render Avatar khi đổi ảnh
-  const [avatarKey, setAvatarKey] = useState(0);
-
-  // Lấy role từ token (giả sử lưu trong localStorage sau khi đăng nhập)
-  const [userRole, setUserRole] = useState<'user' | 'admin'>('user');
+  // Dùng model
+  const {
+    userData, setUserData,
+    allAccounts, setAllAccounts,
+    loading, setLoading,
+    activeTab, setActiveTab,
+    passwordFormAnt,
+    extendFormAnt,
+    avatarPreview, setAvatarPreview,
+    avatarInputRef,
+    avatarKey, setAvatarKey,
+    userRole, setUserRole,
+  } = useProfileModel();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,9 +137,12 @@ const AccountPage: React.FC = () => {
     }
   };
 
+  // Hàm bật/tắt quyền gia hạn cho user (chỉ admin dùng)
   const handleToggleExtensionPermission = async (userId: number, enabled: boolean) => {
     try {
+      // Gọi API cập nhật quyền gia hạn cho user
       await toggleExtensionPermission({ userId, enabled });
+      // Cập nhật lại danh sách tài khoản trong state
       setAllAccounts((prev) =>
         prev.map((account) => (account.id === userId ? { ...account, extensionEnabled: enabled } : account))
       );
@@ -149,11 +152,13 @@ const AccountPage: React.FC = () => {
     }
   };
 
+  // Cấu hình các cột cho bảng quản lý tài khoản (chỉ admin thấy)
   const accountManagementColumns = [
     {
       title: 'Người dùng',
       dataIndex: 'fullName',
       key: 'fullName',
+      // Hiển thị avatar và email bên cạnh tên
       render: (text: string, record: Account) => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Avatar style={{ backgroundColor: '#87d068', marginRight: 8 }}>{text.substring(0, 1)}</Avatar>
@@ -266,7 +271,7 @@ const AccountPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Navigation Tabs */}
+        {/* Thanh điều hướng các tab: Thông tin cá nhân, Thời gian ở trọ (chỉ user), Quản lý tài khoản (chỉ admin) */}
         <Card style={{ marginBottom: 24, borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
           <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'profile' | 'rental' | 'management')}>
             <TabPane
