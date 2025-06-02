@@ -52,8 +52,20 @@ export const useFinanceModel = () => {
 
   // Xác nhận xuất Excel
   const handleConfirmExport = (exportToExcel: (status: string, invoices: Invoice[]) => void) => {
-    exportToExcel(selectedStatus, invoices);
-    setModalVisible(false);
+    // Luôn lấy lại dữ liệu mới nhất theo trạng thái đang chọn
+    getInvoices({
+      status: selectedStatus === 'all' ? undefined : selectedStatus,
+      search,
+      period,
+      residentId,
+    }).then((freshInvoices) => {
+      exportToExcel(selectedStatus, freshInvoices || []);
+      setModalVisible(false);
+    }).catch(() => {
+      // Nếu lỗi thì vẫn export dữ liệu hiện tại
+      exportToExcel(selectedStatus, invoices);
+      setModalVisible(false);
+    });
   };
 
   // Hàm xuất dữ liệu hóa đơn ra file Excel
@@ -65,21 +77,45 @@ export const useFinanceModel = () => {
     }
 
     const dataToExport = filteredInvoices.map(invoice => ({
-      ID: invoice.id,
-      'Cư dân': invoice.resident_name,
-      'Căn hộ': invoice.apartment_number,
-      'Kỳ thu': invoice.billing_period,
-      'Số tiền': `${Math.round(invoice.amount).toLocaleString('vi-VN')} VND`,
-      'Trạng thái':
-        invoice.status === 'paid'
-          ? 'Đã thanh toán'
-          : invoice.status === 'overdue'
-          ? 'Quá hạn'
-          : 'Chưa thanh toán',
-      'Hạn thanh toán': new Date(invoice.due_date).toLocaleDateString('vi-VN'),
+      id: invoice.id,
+      resident_name: invoice.resident_name,
+      apartment_number: invoice.apartment_number,
+      billing_period: invoice.billing_period,
+      amount: invoice.amount,
+      status: invoice.status,
+      due_date: invoice.due_date,
+      // Nếu muốn xuất thêm các trường chi tiết, thêm ở đây
+      // invoice_number: invoice.invoice_number,
+      // number_of_people: invoice.number_of_people,
+      // ...
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    // Nếu muốn xuất đúng header tiếng Việt, có thể chuyển đổi ở đây
+    const headerMap = {
+      id: 'ID',
+      resident_name: 'Cư dân',
+      apartment_number: 'Căn hộ',
+      billing_period: 'Kỳ thu',
+      amount: 'Số tiền',
+      status: 'Trạng thái',
+      due_date: 'Hạn thanh toán',
+    };
+    const dataWithHeader = [headerMap, ...dataToExport.map(row => ({
+      ID: row.id,
+      'Cư dân': row.resident_name,
+      'Căn hộ': row.apartment_number,
+      'Kỳ thu': row.billing_period,
+      'Số tiền': `${Math.round(row.amount).toLocaleString('vi-VN')} VND`,
+      'Trạng thái':
+        row.status === 'paid'
+          ? 'Đã thanh toán'
+          : row.status === 'overdue'
+          ? 'Quá hạn'
+          : 'Chưa thanh toán',
+      'Hạn thanh toán': new Date(row.due_date).toLocaleDateString('vi-VN'),
+    }))];
+
+    const worksheet = XLSX.utils.json_to_sheet(dataWithHeader, { skipHeader: true });
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Hóa đơn');
 
