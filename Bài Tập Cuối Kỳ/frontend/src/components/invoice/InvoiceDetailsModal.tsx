@@ -4,7 +4,7 @@ import { Descriptions, Modal, Divider } from 'antd'; // Import Divider
 interface InvoiceDetailModalProps {
   visible: boolean;
   onClose: () => void;
-  invoice: any; // Cân nhắc tạo một interface cụ thể hơn cho hóa đơn
+  invoice: any; 
 }
 
 const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ visible, onClose, invoice }) => {
