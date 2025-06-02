@@ -12,14 +12,19 @@ export const register = async (req: Request, res: Response) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { fullName, email, password, confirmPassword } = req.body;
+  // Bóc tách 'role' từ req.body
+  const { fullName, email, password, confirmPassword, role } = req.body;
 
   if (password !== confirmPassword) {
     return res.status(400).json({ message: 'Mật khẩu xác nhận không khớp' });
   }
 
+  // Xác thực 'role' để đảm bảo nó là 'admin' hoặc 'user'
+  // Nếu client gửi 'admin' thì là 'admin', ngược lại là 'user' (mặc định)
+  const finalRole = (role === 'admin') ? 'admin' : 'user';
+
   try {
-    console.log('Bắt đầu đăng ký, email:', email);
+    console.log('Bắt đầu đăng ký, email:', email, 'với vai trò:', finalRole);
     const [existingUsers] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
     console.log('Kết quả kiểm tra email:', existingUsers);
     if ((existingUsers as any[]).length > 0) {
@@ -29,7 +34,7 @@ export const register = async (req: Request, res: Response) => {
     console.log('Thêm người dùng vào database');
     const [result] = await pool.query(
       'INSERT INTO users (full_name, email, password, role, created_at) VALUES (?, ?, ?, ?, NOW())',
-      [fullName, email, password, 'user']
+      [fullName, email, password, finalRole] // Sử dụng finalRole để lưu vai trò
     );
     console.log('Kết quả thêm người dùng:', result);
 
@@ -38,7 +43,7 @@ export const register = async (req: Request, res: Response) => {
       await sendEmail(
         email,
         'Đăng ký thành công',
-        `Kính gửi ${fullName},\n\nTài khoản của bạn đã được đăng ký thành công.\n\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
+        `Kính gửi ${fullName},\n\nTài khoản của bạn đã được đăng ký thành công với vai trò ${finalRole}.\n\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
       );
       console.log('Email đã gửi');
     } catch (emailError) {
@@ -72,9 +77,8 @@ export const login = async (req: Request, res: Response) => {
       { id: user.id,
         email: user.email,
         role: user.role,
-       resident_id: user.resident_id,
-       },
-        
+        resident_id: user.resident_id,
+      },
       config.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -281,7 +285,7 @@ export const updateUserPassword = async (req: Request, res: Response) => {
       await sendEmail(
         user.email,
         'Mật khẩu đã được thay đổi',
-           `Kính gửi ${user.full_name},\n\nMật khẩu của bạn đã được quản trị viên cập nhật. Vui lòng sử dụng mật khẩu mới để đăng nhập.\n\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
+        `Kính gửi ${user.full_name},\n\nMật khẩu của bạn đã được quản trị viên cập nhật. Vui lòng sử dụng mật khẩu mới để đăng nhập.\n\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
       );
     } catch (emailError) {
       console.error('Lỗi gửi email:', emailError);

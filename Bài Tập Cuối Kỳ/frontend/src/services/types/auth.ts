@@ -22,6 +22,7 @@ export interface RegisterParams {
   email: string;
   password: string;
   confirmPassword: string;
+  role: string; // 'user' | 'admin'
 }
 
 export interface ForgotPasswordParams {
