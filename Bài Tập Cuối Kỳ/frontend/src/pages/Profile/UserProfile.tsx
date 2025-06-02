@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, Camera, Lock, Calendar, Settings, Users, CheckCircle, XCircle } from 'lucide-react';
 import { message, Layout, Spin, Card, Avatar, Tabs, Form, Input, Select, Button, Table, Tag, Switch } from 'antd';
 import { getProfile, updateAvatar, changePassword, extendRental, getAllAccounts, toggleExtensionPermission } from '@/services/user';
@@ -16,6 +16,10 @@ const AccountPage: React.FC = () => {
   const [passwordFormAnt] = Form.useForm();
   const [extendFormAnt] = Form.useForm();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  // Thêm ref cho input file để reset sau khi upload
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  // Thêm key để force re-render Avatar khi đổi ảnh
+  const [avatarKey, setAvatarKey] = useState(0);
 
   // Lấy role từ token (giả sử lưu trong localStorage sau khi đăng nhập)
   const [userRole, setUserRole] = useState<'user' | 'admin'>('user');
@@ -73,7 +77,10 @@ const AccountPage: React.FC = () => {
         const response = await updateAvatar(formData);
         setUserData((prev) => (prev ? { ...prev, avatar: response.avatar } : prev));
         setAvatarPreview(null);
+        setAvatarKey((k) => k + 1); // Tăng key để Avatar re-render
         message.success('Cập nhật ảnh đại diện thành công');
+        // Reset input file để có thể chọn lại cùng một file nếu muốn
+        if (avatarInputRef.current) avatarInputRef.current.value = '';
       } catch (error) {
         message.error('Lỗi khi cập nhật ảnh đại diện');
       }
@@ -304,19 +311,20 @@ const AccountPage: React.FC = () => {
               <Card title={<><Camera size={20} style={{ verticalAlign: 'middle', marginRight: 8 }} /> Ảnh đại diện</>} bordered={false} style={{ borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <Avatar
+                    key={avatarKey}
                     size={128}
                     src={avatarPreview || (userData?.avatar ? `${config.API_URL}/${userData.avatar}` : undefined)}
                     icon={!avatarPreview && !userData?.avatar ? <User size={64} /> : undefined}
                     style={{ marginBottom: 16, backgroundColor: avatarPreview || userData?.avatar ? '' : '#87d068' }}
                   >
+                    {/* Hiển thị ký tự đầu nếu chưa có avatar */}
                     {(!avatarPreview && !userData?.avatar) && (userData?.fullName?.substring(0, 1) || 'U')}
                   </Avatar>
-                  <label>
-                    <Button type="primary" icon={<Camera size={16} />}>
-                      Chọn ảnh mới
-                    </Button>
-                    <input type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
-                  </label>
+                  <Button type="primary" icon={<Camera size={16} />} onClick={() => avatarInputRef.current?.click()}>
+                    Chọn ảnh mới
+                  </Button>
+                  {/* Input file dùng ref để reset sau upload */}
+                  <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
                   <p style={{ marginTop: 8, color: '#888' }}>Chấp nhận: JPG, PNG. Tối đa 5MB</p>
                 </div>
               </Card>

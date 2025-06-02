@@ -47,10 +47,10 @@ const MaterialDetailsModal: React.FC<Props> = ({ materialId, open, onClose }) =>
           <Descriptions.Item label="ID">{material.id}</Descriptions.Item>
           <Descriptions.Item label="Tên vật tư">{material.name}</Descriptions.Item>
           <Descriptions.Item label="Số lượng tồn kho">{material.quantity}</Descriptions.Item>
-<Descriptions.Item label="Ngưỡng tồn kho thấp">{material.low_stock_threshold}</Descriptions.Item>
-<Descriptions.Item label="Người quản lý">{material.managed_by || 'N/A'}</Descriptions.Item>
-<Descriptions.Item label="Ngày tạo">{new Date(material.created_at).toLocaleString()}</Descriptions.Item>
-<Descriptions.Item label="Ngày cập nhật">{material.updated_at ? new Date(material.updated_at).toLocaleString() : 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Ngưỡng tồn kho thấp">{material.low_stock_threshold}</Descriptions.Item>
+          <Descriptions.Item label="Người quản lý">{material.managed_by || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Ngày tạo">{new Date(material.created_at).toLocaleString()}</Descriptions.Item>
+          <Descriptions.Item label="Ngày cập nhật">{material.updated_at ? new Date(material.updated_at).toLocaleString() : 'N/A'}</Descriptions.Item>
 
         </Descriptions>
       )}
