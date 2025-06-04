@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Descriptions, Button, message } from 'antd';
 import { useHistory, useParams } from 'umi';
 import { getResidentById } from '../../services/residents';
-import styles from '@/assets/styles/ResidentDetails.less'; // ✅ Import đúng file .less
+import { getCurrentUser } from '../../services/auth';
+import styles from '@/assets/styles/ResidentDetails.less'; 
 
 const ResidentDetails: React.FC = () => {
   const [resident, setResident] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string>('user');
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
 
@@ -18,7 +20,16 @@ const ResidentDetails: React.FC = () => {
         message.error(error.message || 'Không thể tải thông tin cư dân');
       }
     };
+    const fetchRole = async () => {
+      try {
+        const user = await getCurrentUser();
+        setUserRole(user.role);
+      } catch {
+        setUserRole('user');
+      }
+    };
     fetchResident();
+    fetchRole();
   }, [id]);
 
   if (!resident) return <div>Đang tải...</div>;
@@ -29,17 +40,20 @@ const ResidentDetails: React.FC = () => {
       <Descriptions bordered>
         <Descriptions.Item label="ID">{resident.id}</Descriptions.Item>
         <Descriptions.Item label="Họ tên">{resident.full_name}</Descriptions.Item>
-        <Descriptions.Item label="Email">{resident.email || 'N/A'}</Descriptions.Item>
-        <Descriptions.Item label="Số điện thoại">{resident.phone_number || 'N/A'}</Descriptions.Item>
-        <Descriptions.Item label="Ngày sinh">{resident.date_of_birth ? new Date(resident.date_of_birth).toLocaleDateString() : 'N/A'}</Descriptions.Item>
+        {userRole === 'admin' && (
+          <>
+            <Descriptions.Item label="Email">{resident.email || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Số điện thoại">{resident.phone_number || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Ngày sinh">{resident.date_of_birth ? new Date(resident.date_of_birth).toLocaleDateString() : 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Địa chỉ">{resident.address || 'N/A'}</Descriptions.Item>
+          </>
+        )}
         <Descriptions.Item label="Giới tính">{resident.gender === 'male' ? 'Nam' : resident.gender === 'female' ? 'Nữ' : 'Khác'}</Descriptions.Item>
         <Descriptions.Item label="Số căn hộ">{resident.apartment_number}</Descriptions.Item>
-        <Descriptions.Item label="Địa chỉ">{resident.address || 'N/A'}</Descriptions.Item>
         <Descriptions.Item label="Ngày tạo">
-  {resident.created_at ? new Date(resident.created_at).toLocaleString() : 'N/A'}
-</Descriptions.Item>
-        </Descriptions>
-
+          {resident.created_at ? new Date(resident.created_at).toLocaleString() : 'N/A'}
+        </Descriptions.Item>
+      </Descriptions>
       <Button className={styles.backButton} onClick={() => history.push('/dashboard/residents')}>
         Quay lại
       </Button>

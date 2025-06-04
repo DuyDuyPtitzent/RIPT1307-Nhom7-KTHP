@@ -55,7 +55,6 @@ const EditVehicleForm: React.FC<Props> = ({ visible, onCancel, vehicleId }) => {
         }
         setVehicleData(vehicle);
         form.setFieldsValue({
-          type: vehicle.type || '',
           license_plate: vehicle.license_plate || '',
           owner_name: vehicle.owner_name || '',
           status: isAdmin ? vehicle.status : undefined,

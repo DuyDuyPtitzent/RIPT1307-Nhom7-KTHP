@@ -96,6 +96,12 @@ export const createVehicle = async (req: AuthRequest, res: Response) => {
     
     console.log('resident_id sử dụng:', resident_id);
 
+    // Validate type
+    const validTypes = ['car', 'motorcycle', 'bicycle', 'other'];
+    if (!type || typeof type !== 'string' || !validTypes.includes(type)) {
+      return res.status(400).json({ message: 'Loại phương tiện không hợp lệ. Chỉ chấp nhận: car, motorcycle, bicycle, other.' });
+    }
+
     if (!resident_id) {
       return res.status(400).json({ message: 'Thiếu resident_id cho cư dân' });
     }
@@ -163,6 +169,14 @@ export const updateVehicle = async (req: AuthRequest, res: Response) => {
     const vehicle = (vehicles as any[])[0];
     if (req.user?.role !== 'admin' && req.user?.resident_id !== vehicle.resident_id) {
       return res.status(403).json({ message: 'Không có quyền chỉnh sửa phương tiện này' });
+    }
+
+    // Validate type if provided
+    const validTypes = ['car', 'motorcycle', 'bicycle', 'other'];
+    if (type !== undefined) {
+      if (!type || typeof type !== 'string' || !validTypes.includes(type)) {
+        return res.status(400).json({ message: 'Loại phương tiện không hợp lệ. Chỉ chấp nhận: car, motorcycle, bicycle, other.' });
+      }
     }
 
     if (license_plate) {

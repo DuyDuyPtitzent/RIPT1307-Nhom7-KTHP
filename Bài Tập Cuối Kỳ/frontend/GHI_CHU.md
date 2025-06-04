@@ -43,3 +43,6 @@ ADD COLUMN water_end DECIMAL(10, 2) NULL,         -- Số nước cuối (kiểu
 ADD COLUMN water_rate DECIMAL(10, 2) NULL,        -- Giá nước (kiểu số thập phân)
 ADD COLUMN internet_fee DECIMAL(10, 2) NULL,      -- Phí internet (kiểu số thập phân)
 ADD COLUMN service_fee_per_person DECIMAL(10, 2) NULL; -- Phí dịch vụ mỗi người (kiểu số thập phân)
+
+//lỗi mới 
+ALTER TABLE vehicles MODIFY COLUMN type ENUM('car', 'motorcycle', 'bicycle', 'other') NOT NULL;
