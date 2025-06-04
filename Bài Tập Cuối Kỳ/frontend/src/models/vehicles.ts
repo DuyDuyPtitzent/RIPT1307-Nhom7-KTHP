@@ -22,11 +22,14 @@ export default function useVehicleModel() {
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [residentId, setResidentId] = useState<number | undefined>();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingVehicleId, setEditingVehicleId] = useState<number | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
-  const [editingVehicleId, setEditingVehicleId] = useState<number | null>(null);
   const [editingVehicle, setEditingVehicle] = useState<any | null>(null);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [viewVehicle, setViewVehicle] = useState<any | null>(null);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
@@ -147,7 +150,6 @@ export default function useVehicleModel() {
     setEditError(null);
   };
 
-  
   const openViewModal = async (id: number) => {
     setLoading(true);
     try {
@@ -171,11 +173,63 @@ export default function useVehicleModel() {
     setIsViewModalVisible(false);
   };
 
+  const handleAction = (action: string, id: number) => {
+    console.log('Handle action:', action, 'for vehicle ID:', id);
+    if (action === 'view') {
+      openViewModal(id);
+    } else if (action === 'edit') {
+      const vehicle = vehicles.find(v => v.id === id);
+      if (isAdmin || vehicle?.resident_id === residentId) {
+        console.log('Opening edit modal for ID:', id);
+        setEditingVehicleId(id);
+        setIsEditModalVisible(true);
+      } else {
+        console.error('Không có quyền chỉnh sửa phương tiện:', id);
+      }
+    } else if (action === 'delete' && isAdmin) {
+      handleDelete(id);
+    }
+  };
+
+  const showAddVehicleModal = () => {
+    setIsAddModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setIsAddModalVisible(false);
+  };
+
+  const handleEditModalClose = () => {
+    setIsEditModalVisible(false);
+    setEditingVehicleId(null);
+    fetchVehicles(residentId); // Làm mới danh sách sau khi chỉnh sửa
+  };
+
+  const handleAddSuccess = () => {
+    fetchVehicles(residentId);
+    setIsAddModalVisible(false);
+  };
+
   return {
     vehicles,
     loading,
     search,
     setSearch,
+    residentId,
+    setResidentId,
+    isAdmin,
+    setIsAdmin,
+    isAddModalVisible,
+    setIsAddModalVisible,
+    isEditModalVisible,
+    setIsEditModalVisible,
+    editingVehicleId,
+    setEditingVehicleId,
+    handleAction,
+    showAddVehicleModal,
+    handleModalClose,
+    handleEditModalClose,
+    handleAddSuccess,
     typeFilter,
     setTypeFilter,
     statusFilter,
@@ -187,9 +241,7 @@ export default function useVehicleModel() {
     handleApprove,
     handleReject,
     setVehicles,
-    editingVehicleId,
     editingVehicle,
-    isEditModalVisible,
     editError,
     openEditModal,
     closeEditModal,

@@ -1,73 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Input, message, Row, Col, Modal, Tag } from 'antd';
-import { useHistory } from 'umi';
-import { getMaterials, deleteMaterial } from '../../services/materials';
-import { getCurrentUser } from '../../services/auth';
-import TableActions from '../../components/TableActions';
+import React, { useEffect } from 'react';
+import { Table, Button, Input,  Row, Col, Modal, Tag } from 'antd';
+import TableActions from '@/components/TableActions';
 import EditMaterialForm from '@/components/materials/EditMaterialForm';
 import AddMaterialForm from '@/components/materials/AddMaterialForm';
-import MaterialDetailsModal from '@/components/materials/MaterialDetailsModal'; // ✅ Đã thêm
+import MaterialDetailsModal from '@/components/materials/MaterialDetailsModal';
+import { useMaterialsModel } from '@/models/Materials';
 
 const Materials: React.FC = () => {
-  const [materials, setMaterials] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [manager, setManager] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [modalEditVisible, setModalEditVisible] = useState(false);
-
-  const [modalAddVisible, setModalAddVisible] = useState(false);
-
-  const [viewingId, setViewingId] = useState<number | null>(null);
-  const [modalViewVisible, setModalViewVisible] = useState(false);
-
-  const history = useHistory();
+  const {
+    materials,
+    loading,
+    search,
+    manager,
+    isAdmin,
+    editingId,
+    modalEditVisible,
+    modalAddVisible,
+    viewingId,
+    modalViewVisible,
+    setSearch,
+    setManager,
+    setEditingId,
+    setModalEditVisible,
+    setModalAddVisible,
+    setViewingId,
+    setModalViewVisible,
+    fetchUserAndMaterials,
+    handleDelete,
+  } = useMaterialsModel();
 
   useEffect(() => {
     fetchUserAndMaterials();
   }, [search, manager]);
-
-  const fetchUserAndMaterials = async () => {
-    setLoading(true);
-    try {
-      const user = await getCurrentUser();
-      if (user.role !== 'admin') {
-        message.error('Bạn không có quyền truy cập');
-        history.push('/dashboard/residents');
-        return;
-      }
-      setIsAdmin(true);
-      const materialsData = await getMaterials({ search, manager });
-      setMaterials(materialsData || []);
-    } catch (error: any) {
-      message.error(error.message || 'Không thể tải danh sách vật tư');
-      setMaterials([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    try {
-      await deleteMaterial(id);
-      message.success('Xóa vật tư thành công');
-      setMaterials(materials.filter((m: any) => m.id !== id));
-    } catch (error: any) {
-      message.error(error.message || 'Xóa vật tư thất bại');
-    }
-  };
-
-  const openEditModal = (id: number) => {
-    setEditingId(id);
-    setModalEditVisible(true);
-  };
-
-  const openViewModal = (id: number) => {
-    setViewingId(id);
-    setModalViewVisible(true);
-  };
 
   const handleUpdateSuccess = () => {
     setModalEditVisible(false);
@@ -78,6 +42,16 @@ const Materials: React.FC = () => {
   const handleAddSuccess = () => {
     setModalAddVisible(false);
     fetchUserAndMaterials();
+  };
+
+  const openEditModal = (id: number) => {
+    setEditingId(id);
+    setModalEditVisible(true);
+  };
+
+  const openViewModal = (id: number) => {
+    setViewingId(id);
+    setModalViewVisible(true);
   };
 
   const columns = [

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Table, Button, Space, Tag, Select, Modal } from 'antd';
 import SearchBar from '../../components/SearchBar';
 import TableActions from '../../components/TableActions';
@@ -8,6 +8,7 @@ import { getCurrentUser } from '../../services/auth';
 import useVehicleModel from '../../models/vehicles';
 import { getVehicleTypeName } from '@/utils/helpers';
 
+
 const { Option } = Select;
 
 const Vehicles: React.FC = () => {
@@ -15,22 +16,28 @@ const Vehicles: React.FC = () => {
     vehicles,
     loading,
     setSearch,
+    residentId,
+    setResidentId,
+    isAdmin,
+    setIsAdmin,
+    isAddModalVisible,
+    isEditModalVisible,
+    editingVehicleId,
+    handleAction,
+    showAddVehicleModal,
+    handleModalClose,
+    handleEditModalClose,
+    handleAddSuccess,
     setTypeFilter,
     setStatusFilter,
     fetchVehicles,
-    handleDelete,
     handleApprove,
     handleReject,
     viewVehicle,
     isViewModalVisible,
-    openViewModal,
     closeViewModal,
   } = useVehicleModel();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [residentId, setResidentId] = useState<number | undefined>();
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [editingVehicleId, setEditingVehicleId] = useState<number | null>(null);
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -47,47 +54,7 @@ const Vehicles: React.FC = () => {
     fetchUser();
   }, [fetchVehicles]);
 
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    fetchVehicles(residentId);
-  };
-
-  const handleAction = (action: string, id: number) => {
-    console.log('Handle action:', action, 'for vehicle ID:', id);
-    if (action === 'view') {
-      openViewModal(id);
-    } else if (action === 'edit') {
-      const vehicle = vehicles.find(v => v.id === id);
-      if (isAdmin || vehicle?.resident_id === residentId) {
-        console.log('Opening edit modal for ID:', id);
-        setEditingVehicleId(id);
-        setIsEditModalVisible(true);
-      } else {
-        console.error('Không có quyền chỉnh sửa phương tiện:', id);
-      }
-    } else if (action === 'delete' && isAdmin) {
-      handleDelete(id);
-    }
-  };
-
-  const showAddVehicleModal = () => {
-    setIsAddModalVisible(true);
-  };
-
-  const handleModalClose = () => {
-    setIsAddModalVisible(false);
-  };
-
-  const handleEditModalClose = () => {
-    setIsEditModalVisible(false);
-    setEditingVehicleId(null);
-    fetchVehicles(residentId); // Làm mới danh sách sau khi chỉnh sửa
-  };
-
-  const handleAddSuccess = () => {
-    fetchVehicles(residentId);
-    setIsAddModalVisible(false);
-  };
+  
 
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
@@ -134,6 +101,11 @@ const Vehicles: React.FC = () => {
       ),
     },
   ];
+
+  function handleSearch(value: string): void {
+    setSearch(value);
+    fetchVehicles(residentId);
+  }
 
   return (
     <div className="authContainer">
