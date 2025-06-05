@@ -4,7 +4,7 @@ import { useHistory } from 'umi';
 import { login } from '../../services/auth';
 import styles from '../../assets/styles/index.less';
 
-const Login: React.FC = () => {
+const Login: React.FC = () => { 
   const history = useHistory();
   const [form] = Form.useForm();
 
@@ -31,7 +31,7 @@ const Login: React.FC = () => {
 
 };
 
-
+  // Xử lý lỗi đăng nhập
   return (
     <div className={styles.authContainer}>
       <h2>Đăng nhập</h2>

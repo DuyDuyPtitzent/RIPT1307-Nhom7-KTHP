@@ -4,7 +4,7 @@ import { useLocation, history } from 'umi';
 import { resetPassword } from '../../services/auth';
 import styles from '../../assets/styles/index.less';
 
-const ResetPassword: React.FC = () => {
+const ResetPassword: React.FC = () => { // Component ResetPassword dùng để đặt lại mật khẩu
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const [token, setToken] = useState<string | null>(null);
@@ -25,7 +25,7 @@ const ResetPassword: React.FC = () => {
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // Bắt đầu quá trình đặt lại mật khẩu
     try {
       console.log('Gọi resetPassword trực tiếp trong onFinish:', { token, newPassword: values.newPassword });
       const result = await resetPassword({
