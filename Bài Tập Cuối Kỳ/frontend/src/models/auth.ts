@@ -1,20 +1,6 @@
-import { Effect, Reducer } from 'umi';
+
 import { getCurrentUser } from '../services/auth';
-
-
-import { AuthState } from '../services/types/auth';
-
-export interface AuthModelType {
-  namespace: 'auth';
-  state: AuthState;
-  effects: {
-    fetchCurrentUser: Effect;
-  };
-  reducers: {
-    setUser: Reducer<AuthState>;
-    clearUser: Reducer<AuthState>;
-  };
-}
+import { AuthModelType } from '../services/types/auth'; // Import AuthModelType and AuthState
 
 const AuthModel: AuthModelType = {
   namespace: 'auth',
