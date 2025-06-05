@@ -4,7 +4,7 @@ export interface User {
   email: string;
   role: 'user' | 'admin';
   createdAt: string;
-   resident_id?: number | null; 
+  resident_id?: number | null; 
 }
 
 export interface AuthState {
@@ -40,4 +40,19 @@ export interface UpdatePasswordParams {
 }
 export interface UpdateUserPasswordParams {
   newPassword: string;
+}
+
+// Moved AuthModelType interface here
+import { Effect, Reducer } from 'umi';
+
+export interface AuthModelType { // Định nghĩa kiểu cho AuthModel
+  namespace: 'auth';
+  state: AuthState;
+  effects: {
+    fetchCurrentUser: Effect;
+  };
+  reducers: {
+    setUser: Reducer<AuthState>;
+    clearUser: Reducer<AuthState>;
+  };
 }

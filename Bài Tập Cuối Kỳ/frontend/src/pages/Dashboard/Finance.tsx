@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { Table, Button, Input, Row, Col, Select, DatePicker, Card, Statistic } from 'antd';
 import { useHistory, useLocation } from 'umi';
-import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import moment from 'moment';
 import InvoiceDetailsModal from '../../components/invoice/InvoiceDetailsModal';
 import EditInvoiceModal from '../../components/invoice/EditInvoiceModal';
@@ -125,12 +125,7 @@ const Finance: React.FC = () => {
   const totalUnpaid = stats.unpaid.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
   const totalOverdue = stats.overdue.reduce((sum, s) => sum + (s.total_revenue || 0), 0);
 
-  const chartData = stats.paid.map((item, index) => ({
-    period: item.period,
-    paid: item.total_revenue,
-    unpaid: stats.unpaid[index]?.total_revenue || 0,
-    overdue: stats.overdue[index]?.total_revenue || 0,
-  }));
+
 
   const pieData = [
     { name: 'Đã thanh toán', value: Number(totalPaid) || 0 },
@@ -248,18 +243,6 @@ const Finance: React.FC = () => {
               </Card>
             </Col>
           </Row>
-
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <XAxis dataKey="period" />
-              <YAxis />
-              <Tooltip formatter={(value: number) => value.toLocaleString('vi-VN') + ' VND'} />
-              <Legend />
-              <Bar dataKey="paid" fill="#52c41a" name="Đã thanh toán" />
-              <Bar dataKey="unpaid" fill="#fa8c16" name="Chưa thanh toán" />
-              <Bar dataKey="overdue" fill="#f5222d" name="Quá hạn" />
-            </BarChart>
-          </ResponsiveContainer>
 
           <div style={{ height: 300, marginTop: 24 }}>
             <ResponsiveContainer width="100%" height="100%">

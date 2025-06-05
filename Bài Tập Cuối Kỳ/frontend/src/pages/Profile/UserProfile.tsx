@@ -1,11 +1,10 @@
-import React, {useEffect, } from 'react';
+import React, { useEffect } from 'react';
 import { User, Camera, Lock, Calendar, Settings, Users, XCircle } from 'lucide-react';
 import { message, Layout, Spin, Card, Avatar, Tabs, Form, Input, Select, Button, Table, Tag, Switch } from 'antd';
-import { getProfile, updateAvatar, changePassword, extendRental, getAllAccounts, toggleExtensionPermission } from '@/services/user';
-import {  Account, PasswordForm, ExtendForm } from '@/services/types/user';
+import { Account } from '@/services/types/user';
 import { config } from '../../utils/constants';
-
 import { useProfileModel } from '@/models/profile';
+
 const { Content } = Layout;
 const { TabPane } = Tabs;
 
@@ -18,10 +17,14 @@ const AccountPage: React.FC = () => {
     activeTab, setActiveTab,
     passwordFormAnt,
     extendFormAnt,
-    avatarPreview, setAvatarPreview,
+    avatarPreview,
     avatarInputRef,
-    avatarKey, setAvatarKey,
+    avatarKey,
     userRole, setUserRole,
+    handleAvatarChange,
+    handlePasswordChange,
+    handleExtendRental,
+    handleToggleExtensionPermission,
   } = useProfileModel();
 
   useEffect(() => {
@@ -35,23 +38,22 @@ const AccountPage: React.FC = () => {
         }
 
         // Lấy profile
-        const profileResponse = await getProfile();
+        const profileResponse = await import('@/services/user').then(s => s.getProfile());
         setUserData(profileResponse);
-        
+
         // Cập nhật giá trị form mật khẩu và gia hạn về trạng thái ban đầu
         passwordFormAnt.setFieldsValue({
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
         });
         extendFormAnt.setFieldsValue({
-            months: 1
+          months: 1,
         });
-
 
         // Lấy danh sách tài khoản nếu là admin
         if (userRole === 'admin') {
-          const accountsResponse = await getAllAccounts();
+          const accountsResponse = await import('@/services/user').then(s => s.getAllAccounts());
           setAllAccounts(accountsResponse);
         }
       } catch (error) {
@@ -62,95 +64,8 @@ const AccountPage: React.FC = () => {
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userRole]);
-
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => setAvatarPreview(e.target?.result as string);
-      reader.readAsDataURL(file);
-
-      try {
-        const formData = new FormData();
-        formData.append('avatar', file);
-        const response = await updateAvatar(formData);
-        setUserData((prev) => (prev ? { ...prev, avatar: response.avatar } : prev));
-        setAvatarPreview(null);
-        setAvatarKey((k) => k + 1); // Tăng key để Avatar re-render
-        message.success('Cập nhật ảnh đại diện thành công');
-        // Reset input file để có thể chọn lại cùng một file nếu muốn
-        if (avatarInputRef.current) avatarInputRef.current.value = '';
-      } catch (error) {
-        message.error('Lỗi khi cập nhật ảnh đại diện');
-      }
-    }
-  };
-
-  const handlePasswordChange = async (values: PasswordForm) => {
-    if (values.newPassword !== values.confirmPassword) {
-      message.error('Mật khẩu xác nhận không khớp');
-      return;
-    }
-
-    try {
-      await changePassword(values);
-      message.success('Đổi mật khẩu thành công');
-      passwordFormAnt.resetFields();
-    } catch (error) {
-      message.error('Lỗi khi đổi mật khẩu');
-    }
-  };
-
-  const handleExtendRental = async (values: ExtendForm) => {
-    if (!userData?.extensionEnabled) {
-      message.error('Tài khoản chưa được cấp quyền gia hạn');
-      return;
-    }
-
-    try {
-      const response = await extendRental(values);
-      setUserData((prev) =>
-        prev && prev.rentalInfo
-          ? {
-              ...prev,
-              rentalInfo: {
-                ...prev.rentalInfo,
-                durationMonths: response.newDuration,
-                remainingDays: prev.rentalInfo.remainingDays + values.months * 30,
-                endDate: new Date(
-                  new Date(prev.rentalInfo.startDate).setMonth(
-                    new Date(prev.rentalInfo.startDate).getMonth() + response.newDuration
-                  )
-                )
-                  .toISOString()
-                  .split('T')[0],
-              },
-            }
-          : prev
-      );
-      message.success(`Gia hạn thành công ${values.months} tháng`);
-      extendFormAnt.resetFields();
-      extendFormAnt.setFieldsValue({months: 1}); // Reset to default value
-    } catch (error) {
-      message.error('Lỗi khi gia hạn thời gian ở trọ');
-    }
-  };
-
-  // Hàm bật/tắt quyền gia hạn cho user (chỉ admin dùng)
-  const handleToggleExtensionPermission = async (userId: number, enabled: boolean) => {
-    try {
-      // Gọi API cập nhật quyền gia hạn cho user
-      await toggleExtensionPermission({ userId, enabled });
-      // Cập nhật lại danh sách tài khoản trong state
-      setAllAccounts((prev) =>
-        prev.map((account) => (account.id === userId ? { ...account, extensionEnabled: enabled } : account))
-      );
-      message.success(`${enabled ? 'Bật' : 'Tắt'} quyền gia hạn thành công`);
-    } catch (error) {
-      message.error('Lỗi khi cập nhật quyền gia hạn');
-    }
-  };
 
   // Cấu hình các cột cho bảng quản lý tài khoản (chỉ admin thấy)
   const accountManagementColumns = [
@@ -158,7 +73,6 @@ const AccountPage: React.FC = () => {
       title: 'Người dùng',
       dataIndex: 'fullName',
       key: 'fullName',
-      // Hiển thị avatar và email bên cạnh tên
       render: (text: string, record: Account) => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Avatar style={{ backgroundColor: '#87d068', marginRight: 8 }}>{text.substring(0, 1)}</Avatar>
@@ -198,9 +112,9 @@ const AccountPage: React.FC = () => {
       key: 'extensionEnabled',
       render: (enabled: boolean, record: Account) =>
         record.role === 'user' ? (
-         <Tag color={enabled ? 'success' : 'error'}>
-          {enabled ? 'Được phép' : 'Không được phép'}
-        </Tag>
+          <Tag color={enabled ? 'success' : 'error'}>
+            {enabled ? 'Được phép' : 'Không được phép'}
+          </Tag>
         ) : null,
     },
     {
@@ -271,7 +185,7 @@ const AccountPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Thanh điều hướng các tab: Thông tin cá nhân, Thời gian ở trọ (chỉ user), Quản lý tài khoản (chỉ admin) */}
+        {/* Tabs navigation */}
         <Card style={{ marginBottom: 24, borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
           <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'profile' | 'rental' | 'management')}>
             <TabPane
@@ -322,13 +236,11 @@ const AccountPage: React.FC = () => {
                     icon={!avatarPreview && !userData?.avatar ? <User size={64} /> : undefined}
                     style={{ marginBottom: 16, backgroundColor: avatarPreview || userData?.avatar ? '' : '#87d068' }}
                   >
-                    {/* Hiển thị ký tự đầu nếu chưa có avatar */}
                     {(!avatarPreview && !userData?.avatar) && (userData?.fullName?.substring(0, 1) || 'U')}
                   </Avatar>
                   <Button type="primary" icon={<Camera size={16} />} onClick={() => avatarInputRef.current?.click()}>
                     Chọn ảnh mới
                   </Button>
-                  {/* Input file dùng ref để reset sau upload */}
                   <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
                   <p style={{ marginTop: 8, color: '#888' }}>Chấp nhận: JPG, PNG. Tối đa 5MB</p>
                 </div>

@@ -1,61 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Input, message, Row, Col, Modal } from 'antd';
+import React, { useEffect } from 'react';
+import { Table, Button, Input, Row, Col, Modal } from 'antd';
 import { useHistory } from 'umi';
-import { getResidents, deleteResident } from '../../services/residents';
 import TableActions from '../../components/TableActions';
-import { getCurrentUser } from '../../services/auth';
 import Header from '@/components/Header';
 import ResidentEditForm from '@/components/residents/ResidentEditForm';
 import ResidentAddForm from '@/components/residents/ResidentAddForm';
+import { useResidentsModel } from '@/models/Resident';
 
 const Residents: React.FC = () => {
-  const [residents, setResidents] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [apartment, setApartment] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [editResidentId, setEditResidentId] = useState<number | null>(null);
-  const [addModalVisible, setAddModalVisible] = useState(false);
+  const {
+    residents,
+    loading,
+    search,
+    apartment,
+    isAdmin,
+    editResidentId,
+    addModalVisible,
+    setSearch,
+    setApartment,
+    setEditResidentId,
+    setAddModalVisible,
+    fetchUserAndResidents,
+    handleDelete,
+  } = useResidentsModel();
+
   const history = useHistory();
 
-  const fetchResidents = async () => {
-    setLoading(true);
-    try {
-      const residentsData = await getResidents({ search, apartment });
-      setResidents(residentsData || []);
-    } catch (error: any) {
-      message.error(error.message || 'Không thể tải danh sách cư dân');
-      setResidents([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    const fetchUserAndResidents = async () => {
-      setLoading(true);
-      try {
-        const user = await getCurrentUser();
-        setIsAdmin(user.role === 'admin');
-        await fetchResidents();
-      } catch (error: any) {
-        message.error(error.message || 'Không thể tải danh sách cư dân');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUserAndResidents();
   }, [search, apartment]);
-
-  const handleDelete = async (id: number) => {
-    try {
-      await deleteResident(id);
-      message.success('Xóa cư dân thành công');
-      setResidents(residents.filter((r: any) => r.id !== id));
-    } catch (error: any) {
-      message.error(error.message || 'Xóa cư dân thất bại');
-    }
-  };
 
   const columns = [
     {
@@ -125,6 +98,7 @@ const Residents: React.FC = () => {
             </Col>
           )}
         </Row>
+
         <Table
           columns={columns}
           dataSource={residents}
@@ -145,7 +119,7 @@ const Residents: React.FC = () => {
               residentId={editResidentId}
               onSuccess={async () => {
                 setEditResidentId(null);
-                await fetchResidents();
+                await fetchUserAndResidents();
               }}
               onCancel={() => setEditResidentId(null)}
             />
@@ -162,7 +136,7 @@ const Residents: React.FC = () => {
           <ResidentAddForm
             onSuccess={async () => {
               setAddModalVisible(false);
-              await fetchResidents();
+              await fetchUserAndResidents();
             }}
             onCancel={() => setAddModalVisible(false)}
           />
@@ -173,3 +147,4 @@ const Residents: React.FC = () => {
 };
 
 export default Residents;
+

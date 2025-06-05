@@ -61,12 +61,6 @@
     ],
   },
 
-  // User management (admin only)
-  {
-    path: '/admin/users',
-    component: '@/pages/Auth/UserManagement',
-    access: 'admin',
-  },
 
   // Redirect root to dashboard
   { path: '/', redirect: '/dashboard/residents' },
