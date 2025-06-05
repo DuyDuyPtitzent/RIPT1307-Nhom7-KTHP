@@ -42,7 +42,7 @@ const AuthModel: AuthModelType = {
   },
 
   reducers: {
-    setUser(state, { payload }) {
+    setUser(state, { payload }) { // Hàm setUser sẽ được gọi khi người dùng đăng nhập thành công
       return {
         ...state,
         user: payload,

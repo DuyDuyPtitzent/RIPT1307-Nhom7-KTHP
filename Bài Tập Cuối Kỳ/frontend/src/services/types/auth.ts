@@ -45,7 +45,7 @@ export interface UpdateUserPasswordParams {
 // Moved AuthModelType interface here
 import { Effect, Reducer } from 'umi';
 
-export interface AuthModelType {
+export interface AuthModelType { // Định nghĩa kiểu cho AuthModel
   namespace: 'auth';
   state: AuthState;
   effects: {
