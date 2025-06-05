@@ -7,7 +7,7 @@ import styles from '../../assets/styles/index.less';
 const ForgotPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: any) => { // Hàm onFinish sẽ được gọi khi người dùng gửi form quên mật khẩu
     setLoading(true);
     try {
       console.log('Gọi forgotPassword trực tiếp trong onFinish:', values);
