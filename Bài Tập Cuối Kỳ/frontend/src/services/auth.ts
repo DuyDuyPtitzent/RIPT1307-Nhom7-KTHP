@@ -97,7 +97,7 @@ export async function updatePassword(params: UpdatePasswordParams) {
   });
 }
 
-export async function updateUserPassword(id: number, params: UpdateUserPasswordParams) {
+export async function updateUserPassword(id: number, params: UpdateUserPasswordParams) { // Hàm này sẽ được gọi khi quản trị viên cập nhật mật khẩu người dùng
   const res = await request(`/api/auth/users/${id}/password`, {
     method: 'PUT',
     data: params,
