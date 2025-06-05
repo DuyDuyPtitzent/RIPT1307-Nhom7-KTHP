@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Form, Input, Button, DatePicker, Select, message } from 'antd';
 import moment from 'moment';
 import { getResidentById, updateResident } from '@/services/residents';
+import { getCurrentUser } from '@/services/auth';
 
 interface Props {
   residentId: number;
@@ -11,6 +12,7 @@ interface Props {
 
 const ResidentEditForm: React.FC<Props> = ({ residentId, onSuccess, onCancel }) => {
   const [form] = Form.useForm();
+  const [userRole, setUserRole] = React.useState<string>('user');
 
   useEffect(() => {
     const fetchResident = async () => {
@@ -29,7 +31,16 @@ const ResidentEditForm: React.FC<Props> = ({ residentId, onSuccess, onCancel }) 
         message.error(error.message || 'Không thể tải thông tin cư dân');
       }
     };
+    const fetchRole = async () => {
+      try {
+        const user = await getCurrentUser();
+        setUserRole(user.role);
+      } catch {
+        setUserRole('user');
+      }
+    };
     fetchResident();
+    fetchRole();
   }, [residentId, form]);
 
   const onFinish = async (values: any) => {
@@ -55,15 +66,22 @@ const ResidentEditForm: React.FC<Props> = ({ residentId, onSuccess, onCancel }) 
       <Form.Item label="Họ tên" name="fullName" rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}>
         <Input />
       </Form.Item>
-      <Form.Item label="Email" name="email" rules={[{ type: 'email', message: 'Email không hợp lệ' }]}>
-        <Input />
-      </Form.Item>
-      <Form.Item label="Số điện thoại" name="phoneNumber">
-        <Input />
-      </Form.Item>
-      <Form.Item label="Ngày sinh" name="dateOfBirth">
-        <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
-      </Form.Item>
+      {userRole === 'admin' && (
+        <>
+          <Form.Item label="Email" name="email" rules={[{ type: 'email', message: 'Email không hợp lệ' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Số điện thoại" name="phoneNumber">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Ngày sinh" name="dateOfBirth">
+            <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item label="Địa chỉ" name="address">
+            <Input />
+          </Form.Item>
+        </>
+      )}
       <Form.Item label="Giới tính" name="gender">
         <Select>
           <Select.Option value="male">Nam</Select.Option>
@@ -72,9 +90,6 @@ const ResidentEditForm: React.FC<Props> = ({ residentId, onSuccess, onCancel }) 
         </Select>
       </Form.Item>
       <Form.Item label="Số căn hộ" name="apartmentNumber" rules={[{ required: true, message: 'Vui lòng nhập số căn hộ' }]}>
-        <Input />
-      </Form.Item>
-      <Form.Item label="Địa chỉ" name="address">
         <Input />
       </Form.Item>
       <Form.Item>
