@@ -4,7 +4,7 @@ export interface Invoice {
   resident_name: string;
   apartment_number: string;
   billing_period: string; // Tháng/Kỳ thu, ví dụ: "2025-05"
-  amount: number
+  amount: number // Số tiền hóa đơn
   status: 'paid' | 'unpaid' | 'overdue'; // Trạng thái thanh toán
   due_date: Date; // Ngày đến hạn
   created_at: Date;

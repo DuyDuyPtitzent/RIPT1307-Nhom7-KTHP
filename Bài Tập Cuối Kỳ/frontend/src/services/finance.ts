@@ -36,7 +36,7 @@ export async function updateInvoice(id: number, params: UpdateInvoiceParams): Pr
   });
   return res;
 }
-
+// Xóa hóa đơn
 export async function deleteInvoice(id: number): Promise<any> {
   const res = await request(`/api/finance/${id}`, {
     method: 'DELETE',

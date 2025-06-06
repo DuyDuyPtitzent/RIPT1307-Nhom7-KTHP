@@ -1,12 +1,12 @@
 import React from 'react';
 import { Descriptions, Modal, Divider } from 'antd'; // Import Divider
-
+// Đảm bảo đã cài đặt antd và import các thành phần cần thiết
 interface InvoiceDetailModalProps {
   visible: boolean;
   onClose: () => void;
   invoice: any; 
 }
-
+// Định nghĩa kiểu dữ liệu cho props của modal
 const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({ visible, onClose, invoice }) => {
   if (!invoice) return null;
 

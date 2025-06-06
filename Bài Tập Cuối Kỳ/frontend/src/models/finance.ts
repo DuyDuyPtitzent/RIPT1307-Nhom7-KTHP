@@ -71,7 +71,7 @@ export const useFinanceModel = () => {
   // Hàm xuất dữ liệu hóa đơn ra file Excel
   const exportToExcel = (filterStatus: string, invoices: Invoice[]) => {
     let filteredInvoices = invoices;
-
+    // Lọc hóa đơn theo trạng thái nếu cần
     if (filterStatus === 'paid' || filterStatus === 'unpaid' || filterStatus === 'overdue') {
       filteredInvoices = invoices.filter(invoice => invoice.status === filterStatus);
     }

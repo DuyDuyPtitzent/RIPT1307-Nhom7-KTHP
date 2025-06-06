@@ -46,7 +46,7 @@ const AddInvoiceForm: React.FC = () => {
       }
     };
     fetchResidents();
-
+    // Khởi tạo các giá trị mặc định cho form
     form.setFieldsValue({
       invoiceNumber: generateInvoiceNumber(),
       paymentStatus: 'unpaid',
