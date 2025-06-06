@@ -1,92 +1,70 @@
 ﻿export default [
-	{
-		path: '/user',
-		layout: false,
-		routes: [
-			{
-				path: '/user/login',
-				layout: false,
-				name: 'login',
-				component: './user/Login',
-			},
-			{
-				path: '/user',
-				redirect: '/user/login',
-			},
-		],
-	},
+  	
+ {
+		path: '/Dashboard/Residents',
+		name: 'Dân cư',
+		component: './Dashboard/Residents',
+		icon: 'EnvironmentOutlined',
+	},{
+		path: '/dashboard/finance',
+		name: 'Tài Chính',
+		component: './Dashboard/Finance',
+		icon: 'DollarOutlined',
+	},{
+		path: '/dashboard/vehicless',
+		name: 'Phương Tiện',
+		component: './Dashboard/Vehicles',
+		icon: 'AppstoreOutlined',
+	},{
+		path: '/dashboard/materials',
+		name: 'Vật Tư',
+		component: './Dashboard/Materials',
+    icon: 'ToolOutlined',
+	},{
+		path: '/logout',
+		name: 'Đăng xuất',
+		component: './Auth/Logout',
+    icon: 'LogoutOutlined',
+    
+	},{
+        path: '/profile',
+        component: './Profile/UserProfile',
+        //access: 'user', // Cả user và admin đều có thể truy cập
+        name: 'Tài khoản',
+        icon: 'UserOutlined'},
+  
 
-	///////////////////////////////////
-	// DEFAULT MENU
-	{
-		path: '/dashboard',
-		name: 'Dashboard',
-		component: './TrangChu',
-		icon: 'HomeOutlined',
-	},
-	{
-		path: '/gioi-thieu',
-		name: 'About',
-		component: './TienIch/GioiThieu',
-		hideInMenu: true,
-	},
-	{
-		path: '/random-user',
-		name: 'RandomUser',
-		component: './RandomUser',
-		icon: 'ArrowsAltOutlined',
-	},
 
-	// DANH MUC HE THONG
-	// {
-	// 	name: 'DanhMuc',
-	// 	path: '/danh-muc',
-	// 	icon: 'copy',
-	// 	routes: [
-	// 		{
-	// 			name: 'ChucVu',
-	// 			path: 'chuc-vu',
-	// 			component: './DanhMuc/ChucVu',
-	// 		},
-	// 	],
-	// },
 
-	{
-		path: '/notification',
-		routes: [
-			{
-				path: './subscribe',
-				exact: true,
-				component: './ThongBao/Subscribe',
-			},
-			{
-				path: './check',
-				exact: true,
-				component: './ThongBao/Check',
-			},
-			{
-				path: './',
-				exact: true,
-				component: './ThongBao/NotifOneSignal',
-			},
-		],
-		layout: false,
-		hideInMenu: true,
-	},
-	{
-		path: '/',
-	},
-	{
-		path: '/403',
-		component: './exception/403/403Page',
-		layout: false,
-	},
-	{
-		path: '/hold-on',
-		component: './exception/DangCapNhat',
-		layout: false,
-	},
-	{
-		component: './exception/404',
-	},
+  // Public Auth Pages
+  { path: '/auth/login', component: '@/pages/Auth/Login', layout: false },
+  { path: '/auth/register', component: '@/pages/Auth/Register', layout: false },
+  { path: '/auth/forgot-password', component: '@/pages/Auth/ForgotPassword', layout: false },
+  { path: '/auth/reset-password', component: '@/pages/Auth/ResetPassword', layout: false },
+
+  // Protected Dashboard Routes
+  {
+    routes: [
+      {path: '/dashboard/residents',component: '@/pages/Dashboard/Residents',access: 'user',},
+      { path: '/dashboard/materials',component: '@/pages/Dashboard/Materials', access: 'admin' },
+      { path: '/dashboard/finance', component: '@/pages/Dashboard/Finance', access: 'user' },
+//{ path: '/dashboard/Overdue', component: '@/pages/Dashboard/OverdueManagement', access: 'admin' },
+    //  { path: '/materials/details/:id',component: '@/pages/Materials/MaterialDetails',access: 'admin' },
+      {path: '/dashboard/residents/details/:id',component: '@/pages/Residents/ResidentDetails',access: 'user',},
+      // { path: '/invoices/details/:id', component: '@/pages/Invoices/InvoiceDetails', access: 'user' },
+       { path: '/dashboard/invoices/add', component: '@/pages/Invoices/AddInvoice', access: 'admin' },
+        { path: '/dashboard/vehicles', component: '@/pages/Dashboard/Vehicles', access: 'user' },
+    
+   
+  
+
+    ],
+  },
+
+
+  // Redirect root to dashboard
+  { path: '/', redirect: '/dashboard/residents' },
+
+  // Catch-all 404
+  { path: '*', component: '@/pages/NotFound' },
 ];
