@@ -44,7 +44,7 @@
     } else {
       form.resetFields();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [invoiceId]);
 
   // Patch resident_name/apartment_number nếu thiếu, chỉ khi residents hoặc resident_id đổi
@@ -59,7 +59,7 @@
         });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+ 
   }, [residents, invoiceId]);
 
   const handleFinish = (values: Invoice) => {

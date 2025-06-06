@@ -77,8 +77,8 @@ export interface Resident {
   name: string;
   apartment: string;
   email?: string;
-  full_name?: string; // Có thể cần thêm nếu backend trả về full_name
-  apartment_number?: string; // Có thể cần thêm nếu backend trả về apartment_number
+  full_name?: string; 
+  apartment_number?: string; 
 }
 
 export interface InvoiceFormData {

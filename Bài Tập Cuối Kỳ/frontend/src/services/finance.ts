@@ -44,7 +44,7 @@ export async function deleteInvoice(id: number): Promise<any> {
   return res;
 }
 
-export async function getRevenueStats(params?: {
+export async function getRevenueStats(params?: { // Các tham số tùy chọn để lọc dữ liệu
   startDate?: string;
   endDate?: string;
   period?: 'month' | 'quarter' | 'year';
