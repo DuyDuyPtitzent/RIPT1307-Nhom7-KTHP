@@ -6,7 +6,7 @@ import { register } from '../../services/auth';
 import styles from '../../assets/styles/index.less';
 
 const Register: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Trạng thái loading để hiển thị khi đang đăng ký
   const [isAdmin, setIsAdmin] = useState(false); // Thêm trạng thái mới cho công tắc
 
   const { run } = useRequest(register, {
