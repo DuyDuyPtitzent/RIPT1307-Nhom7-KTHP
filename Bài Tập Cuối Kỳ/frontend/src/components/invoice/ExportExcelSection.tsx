@@ -2,7 +2,7 @@
 import React from 'react';
 import { Row, Col, Select, Modal } from 'antd';
 import { useFinanceModel } from '@/models/finance';
-
+// Import hook mô hình tài chính để truy cập state và các hành động
 const { Option } = Select;
 
 const ExportExcelSection: React.FC = () => {

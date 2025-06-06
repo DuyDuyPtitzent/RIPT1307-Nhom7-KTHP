@@ -9,7 +9,7 @@ import EditInvoiceModal from '../../components/invoice/EditInvoiceModal';
 import ExportExcelSection from '@/components/invoice/ExportExcelSection';
 import { useFinanceModel } from '@/models/finance';
 
-const { Option } = Select;
+const { Option } = Select;          // Sử dụng Option từ Select để tạo các lựa chọn
 const { RangePicker } = DatePicker; // Sử dụng RangePicker để chọn khoảng thời gian
 
 const Finance: React.FC = () => {

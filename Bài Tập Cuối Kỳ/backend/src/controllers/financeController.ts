@@ -147,12 +147,12 @@ export const createInvoice = async (req: Request, res: Response) => {
     );
 
     // Gửi email thông báo (giữ nguyên logic cũ, sử dụng amount tổng)
+
     try {
       const subject = status === 'overdue' ? 'Cảnh báo hóa đơn quá hạn' : 'Thông báo hóa đơn mới';
       const message = status === 'overdue'
         ? `Kính gửi ${resident_name},\n\nHóa đơn mới cho căn hộ ${apartment_number} đã quá hạn.\nKỳ thu: ${billing_period}\nSố tiền: ${amount.toLocaleString('vi-VN')} VND\nHạn thanh toán: ${dueDate.toLocaleDateString('vi-VN')}\nVui lòng thanh toán ngay lập tức.\nTrân trọng,\nĐội ngũ Quản lý Dân cư`
         : `Kính gửi ${resident_name},\n\nHóa đơn mới đã được tạo cho căn hộ ${apartment_number}.\nKỳ thu: ${billing_period}\nSố tiền: ${amount.toLocaleString('vi-VN')} VND\nHạn thanh toán: ${dueDate.toLocaleDateString('vi-VN')}\nVui lòng thanh toán đúng hạn.\nTrân trọng,\nĐội ngũ Quản lý Dân cư`;
-
       await sendEmail(resident.email, subject, message);
     } catch (emailError) {
       console.error('Lỗi gửi email thông báo hóa đơn:', emailError);
