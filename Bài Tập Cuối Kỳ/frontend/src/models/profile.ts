@@ -49,9 +49,9 @@ export function useProfileModel() {
     }
 
     try {
-      await changePassword(values);
+      await changePassword(values); // Gọi API đổi mật khẩu
       message.success('Đổi mật khẩu thành công');
-      passwordFormAnt.resetFields();
+      passwordFormAnt.resetFields(); // Reset form sau khi đổi mật khẩu
     } catch (error) {
       message.error('Lỗi khi đổi mật khẩu');
     }

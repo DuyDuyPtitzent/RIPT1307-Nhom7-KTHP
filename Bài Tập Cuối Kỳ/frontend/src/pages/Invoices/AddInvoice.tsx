@@ -332,7 +332,7 @@ const AddInvoiceForm: React.FC = () => {
           >
             <Select>
               <Option value="unpaid">Chưa thanh toán</Option>
-              <Option value="paid">Đã thanh toán</Option>
+
             </Select>
           </Form.Item>
 
