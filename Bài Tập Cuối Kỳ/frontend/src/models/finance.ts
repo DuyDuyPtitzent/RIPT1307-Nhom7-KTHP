@@ -4,11 +4,11 @@ import { message } from 'antd';
 import { getInvoices, deleteInvoice, getRevenueStats, confirmPayment, getInvoiceById, updateInvoice, getOverdueInvoices, createInvoice } from '@/services/finance'; // Thêm createInvoice
 import { getCurrentUser } from '@/services/auth';
 import { getResidents } from '@/services/residents';
-import { Invoice, Resident, CreateInvoiceParams, InvoiceFormData } from '@/services/types/finance'; // Thêm Resident, CreateInvoiceParams, InvoiceFormData
+import { Invoice, Resident, CreateInvoiceParams, InvoiceFormData } from '@/services/types/finance';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import moment from 'moment';
-import { useHistory } from 'umi'; // Thêm useHistory nếu bạn muốn chuyển hướng trong hook
+import { useHistory } from 'umi';
 
 // Định nghĩa kiểu dữ liệu cho thống kê doanh thu
 interface RevenueStats {
@@ -17,7 +17,7 @@ interface RevenueStats {
   overdue: { period: string; total_revenue: number }[];
 }
 
-// KHÔNG THAY ĐỔI useFinanceModel 
+
 export const useFinanceModel = () => {
   // State cho các dữ liệu tài chính 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -84,13 +84,10 @@ export const useFinanceModel = () => {
       amount: invoice.amount,
       status: invoice.status,
       due_date: invoice.due_date,
-      // Nếu muốn xuất thêm các trường chi tiết, thêm ở đây
-      // invoice_number: invoice.invoice_number,
-      // number_of_people: invoice.number_of_people,
-      // ...
+  
     }));
 
-    // Nếu muốn xuất đúng header tiếng Việt, có thể chuyển đổi ở đây
+    // Thêm tiêu đề cột vào dữ liệu
     const headerMap = {
       id: 'ID',
       resident_name: 'Cư dân',

@@ -10,7 +10,7 @@ import ExportExcelSection from '@/components/invoice/ExportExcelSection';
 import { useFinanceModel } from '@/models/finance';
 
 const { Option } = Select;
-const { RangePicker } = DatePicker;
+const { RangePicker } = DatePicker; // Sử dụng RangePicker để chọn khoảng thời gian
 
 const Finance: React.FC = () => {
   const {
