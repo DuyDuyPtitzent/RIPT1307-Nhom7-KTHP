@@ -49,7 +49,7 @@ export function useProfileModel() {
     }
 
     try {
-      await changePassword(values);
+      await changePassword(values); // Gọi API đổi mật khẩu
       message.success('Đổi mật khẩu thành công');
       passwordFormAnt.resetFields();
     } catch (error) {
