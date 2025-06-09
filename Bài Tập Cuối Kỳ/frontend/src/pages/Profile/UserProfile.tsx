@@ -25,6 +25,7 @@ const AccountPage: React.FC = () => {
     handlePasswordChange,
     handleExtendRental,
     handleToggleExtensionPermission,
+    monthsSelected, setMonthsSelected, 
   } = useProfileModel();
 
   useEffect(() => {
@@ -371,7 +372,13 @@ const AccountPage: React.FC = () => {
                       name="months"
                       rules={[{ required: true, message: 'Vui lòng chọn số tháng muốn gia hạn!' }]}
                     >
-                      <Select onChange={(value) => extendFormAnt.setFieldsValue({ months: value })}>
+                      <Select
+                        value={monthsSelected}
+                        onChange={(value) => {
+                          extendFormAnt.setFieldsValue({ months: value });
+                          setMonthsSelected(value);
+                        }}
+                      >
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => (
                           <Select.Option key={month} value={month}>
                             {month} tháng
@@ -384,12 +391,12 @@ const AccountPage: React.FC = () => {
                         • Thời gian hiện tại: {userData?.rentalInfo?.durationMonths || 0} tháng
                       </p>
                       <p style={{ margin: 0 }}>
-                        • Sau khi gia hạn: {(userData?.rentalInfo?.durationMonths || 0) + (extendFormAnt.getFieldValue('months') || 0)} tháng
+                        • Sau khi gia hạn: {(userData?.rentalInfo?.durationMonths || 0) + (monthsSelected || 0)} tháng
                       </p>
                     </Card>
                     <Form.Item>
                       <Button type="primary" htmlType="submit">
-                        Gia hạn {extendFormAnt.getFieldValue('months') || 1} tháng
+                        Gia hạn {monthsSelected || 1} tháng
                       </Button>
                     </Form.Item>
                   </Form>

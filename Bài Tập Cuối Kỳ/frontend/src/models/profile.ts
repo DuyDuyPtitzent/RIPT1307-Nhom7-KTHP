@@ -16,6 +16,8 @@ export function useProfileModel() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [avatarKey, setAvatarKey] = useState(0);
   const [userRole, setUserRole] = useState<'user' | 'admin'>('user');
+  // State lưu số tháng chọn realtime cho form gia hạn
+  const [monthsSelected, setMonthsSelected] = useState(1);
 
   // Handler: Đổi avatar
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,8 +90,15 @@ export function useProfileModel() {
       message.success(`Gia hạn thành công ${values.months} tháng`);
       extendFormAnt.resetFields();
       extendFormAnt.setFieldsValue({ months: 1 }); // Reset về giá trị mặc định
-    } catch (error) {
-      message.error('Lỗi khi gia hạn thời gian ở trọ');
+    } catch (error: any) {
+      // Hiển thị chi tiết lỗi từ backend nếu có
+      const backendMsg = error?.response?.data?.message || error?.message || 'Lỗi khi gia hạn thời gian ở trọ';
+      message.error(`Lỗi khi gia hạn: ${backendMsg}`);
+      // Log chi tiết để debug
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.error('Extend rental error:', error);
+      }
     }
   };
 
@@ -118,6 +127,8 @@ export function useProfileModel() {
     avatarInputRef,
     avatarKey, setAvatarKey,
     userRole, setUserRole,
+    monthsSelected,
+    setMonthsSelected,
     // Handler
     handleAvatarChange,
     handlePasswordChange,
