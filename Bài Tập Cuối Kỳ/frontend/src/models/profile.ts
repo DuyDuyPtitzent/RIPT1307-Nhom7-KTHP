@@ -20,7 +20,7 @@ export function useProfileModel() {
   const [monthsSelected, setMonthsSelected] = useState(1);
 
   // Handler: Đổi avatar
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => { 
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -74,11 +74,11 @@ export function useProfileModel() {
               ...prev,
               rentalInfo: {
                 ...prev.rentalInfo,
-                durationMonths: response.newDuration,
-                remainingDays: prev.rentalInfo.remainingDays + values.months * 30,
+                durationMonths: response.newDuration, 
+                remainingDays: prev.rentalInfo.remainingDays + values.months * 30, 
                 endDate: new Date(
-                  new Date(prev.rentalInfo.startDate).setMonth(
-                    new Date(prev.rentalInfo.startDate).getMonth() + response.newDuration
+                  new Date(prev.rentalInfo.startDate).setMonth( 
+                    new Date(prev.rentalInfo.startDate).getMonth() + response.newDuration 
                   )
                 )
                   .toISOString()
@@ -94,9 +94,7 @@ export function useProfileModel() {
       // Hiển thị chi tiết lỗi từ backend nếu có
       const backendMsg = error?.response?.data?.message || error?.message || 'Lỗi khi gia hạn thời gian ở trọ';
       message.error(`Lỗi khi gia hạn: ${backendMsg}`);
-      // Log chi tiết để debug
       if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
         console.error('Extend rental error:', error);
       }
     }
@@ -105,9 +103,9 @@ export function useProfileModel() {
   // Handler: Bật/Tắt quyền gia hạn của user (admin)
   const handleToggleExtensionPermission = async (userId: number, enabled: boolean) => {
     try {
-      await toggleExtensionPermission({ userId, enabled });
+      await toggleExtensionPermission({ userId, enabled }); // Gọi API để cập nhật quyền gia hạn 
       setAllAccounts((prev) =>
-        prev.map((account) => (account.id === userId ? { ...account, extensionEnabled: enabled } : account))
+        prev.map((account) => (account.id === userId ? { ...account, extensionEnabled: enabled } : account)) 
       );
       message.success(`${enabled ? 'Bật' : 'Tắt'} quyền gia hạn thành công`);
     } catch (error) {
