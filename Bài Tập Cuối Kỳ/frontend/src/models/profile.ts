@@ -16,9 +16,11 @@ export function useProfileModel() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [avatarKey, setAvatarKey] = useState(0);
   const [userRole, setUserRole] = useState<'user' | 'admin'>('user');
+  // State lưu số tháng chọn realtime cho form gia hạn
+  const [monthsSelected, setMonthsSelected] = useState(1);
 
   // Handler: Đổi avatar
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => { 
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -72,11 +74,11 @@ export function useProfileModel() {
               ...prev,
               rentalInfo: {
                 ...prev.rentalInfo,
-                durationMonths: response.newDuration,
-                remainingDays: prev.rentalInfo.remainingDays + values.months * 30,
+                durationMonths: response.newDuration, 
+                remainingDays: prev.rentalInfo.remainingDays + values.months * 30, 
                 endDate: new Date(
-                  new Date(prev.rentalInfo.startDate).setMonth(
-                    new Date(prev.rentalInfo.startDate).getMonth() + response.newDuration
+                  new Date(prev.rentalInfo.startDate).setMonth( 
+                    new Date(prev.rentalInfo.startDate).getMonth() + response.newDuration 
                   )
                 )
                   .toISOString()
@@ -88,17 +90,22 @@ export function useProfileModel() {
       message.success(`Gia hạn thành công ${values.months} tháng`);
       extendFormAnt.resetFields();
       extendFormAnt.setFieldsValue({ months: 1 }); // Reset về giá trị mặc định
-    } catch (error) {
-      message.error('Lỗi khi gia hạn thời gian ở trọ');
+    } catch (error: any) {
+      // Hiển thị chi tiết lỗi từ backend nếu có
+      const backendMsg = error?.response?.data?.message || error?.message || 'Lỗi khi gia hạn thời gian ở trọ';
+      message.error(`Lỗi khi gia hạn: ${backendMsg}`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Extend rental error:', error);
+      }
     }
   };
 
   // Handler: Bật/Tắt quyền gia hạn của user (admin)
   const handleToggleExtensionPermission = async (userId: number, enabled: boolean) => {
     try {
-      await toggleExtensionPermission({ userId, enabled });
+      await toggleExtensionPermission({ userId, enabled }); // Gọi API để cập nhật quyền gia hạn 
       setAllAccounts((prev) =>
-        prev.map((account) => (account.id === userId ? { ...account, extensionEnabled: enabled } : account))
+        prev.map((account) => (account.id === userId ? { ...account, extensionEnabled: enabled } : account)) 
       );
       message.success(`${enabled ? 'Bật' : 'Tắt'} quyền gia hạn thành công`);
     } catch (error) {
@@ -118,6 +125,8 @@ export function useProfileModel() {
     avatarInputRef,
     avatarKey, setAvatarKey,
     userRole, setUserRole,
+    monthsSelected,
+    setMonthsSelected,
     // Handler
     handleAvatarChange,
     handlePasswordChange,

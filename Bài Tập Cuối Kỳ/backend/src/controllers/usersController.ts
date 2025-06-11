@@ -240,16 +240,19 @@ export const extendRental = async (req: AuthRequest, res: Response) => {
       [newDuration, userId]
     );
 
-    // Gửi email thông báo
-    await sendEmail(
-      userEmail!,
-      'Gia hạn thời gian ở trọ thành công',
-      `Xin chào,\n\nBạn đã gia hạn thời gian ở trọ thêm ${months} tháng.\nThời gian ở mới: ${newDuration} tháng.\n\nTrân trọng,\nHệ thống quản lý dân cư`
-    );
-
+    // TRẢ RESPONSE NGAY CHO CLIENT
     res.json({
       message: `Gia hạn thành công ${months} tháng`,
       newDuration,
+    });
+
+    // Gửi email thông báo (không cần chờ)
+    sendEmail(
+      userEmail!,
+      'Gia hạn thời gian ở trọ thành công',
+      `Xin chào,\n\nBạn đã gia hạn thời gian ở trọ thêm ${months} tháng.\nThời gian ở mới: ${newDuration} tháng.\n\nTrân trọng,\nHệ thống quản lý dân cư`
+    ).catch((err) => {
+      console.error('Lỗi gửi email gia hạn:', err);
     });
   } catch (error: any) {
     console.error('Lỗi gia hạn:', error);

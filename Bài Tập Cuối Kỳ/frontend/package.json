@@ -39,6 +39,7 @@
     "tsc": "tsc --noEmit",
     "prepare": "husky install",
     "sentry:sourcemaps": ""
+    
   },
   "lint-staged": {
     "**/*.less": "stylelint --syntax less",

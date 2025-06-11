@@ -15,7 +15,7 @@ interface AuthRequest extends Request {
   user?: { id: number; email: string; role: string; resident_id?: number };
 }
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => { 
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -23,14 +23,13 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     return res.status(401).json({ message: 'Yêu cầu access token' });
   }
 
-  jwt.verify(token, config.JWT_SECRET, (err, user) => {
+  jwt.verify(token, config.JWT_SECRET, (err, user) => { 
   if (err) {
     return res.status(403).json({ message: 'Token không hợp lệ' });
   }
 
   // Đảm bảo gán đủ resident_id nếu có
   req.user = user as { id: number; email: string; role: string; resident_id?: number };
-
   next();
 });
 

@@ -7,7 +7,7 @@ export interface Invoice {
   apartment_number: string;
   billing_period: string;
   amount: number;
-  status: 'paid' | 'unpaid' | 'overdue';
+  status: 'paid' | 'unpaid' | 'overdue';    // Trạng thái thanh toán
   due_date: string;
   created_at: string;
   updated_at?: string;

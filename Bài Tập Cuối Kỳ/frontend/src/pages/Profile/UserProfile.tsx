@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { User, Camera, Lock, Calendar, Settings, Users, XCircle } from 'lucide-react';
 import { message, Layout, Spin, Card, Avatar, Tabs, Form, Input, Select, Button, Table, Tag, Switch } from 'antd';
 import { Account } from '@/services/types/user';
-import { config } from '../../utils/constants';
+import { ROLES, config } from '../../utils/constants';
 import { useProfileModel } from '@/models/profile';
 
 const { Content } = Layout;
@@ -23,8 +23,9 @@ const AccountPage: React.FC = () => {
     userRole, setUserRole,
     handleAvatarChange,
     handlePasswordChange,
-    handleExtendRental,
-    handleToggleExtensionPermission,
+    handleExtendRental,// Hàm gia hạn thời gian ở trọ
+    handleToggleExtensionPermission,// Hàm bật/tắt quyền gia hạn
+    monthsSelected, setMonthsSelected, 
   } = useProfileModel();
 
   useEffect(() => {
@@ -47,14 +48,14 @@ const AccountPage: React.FC = () => {
           newPassword: '',
           confirmPassword: '',
         });
-        extendFormAnt.setFieldsValue({
+        extendFormAnt.setFieldsValue({ 
           months: 1,
         });
 
         // Lấy danh sách tài khoản nếu là admin
-        if (userRole === 'admin') {
+        if (userRole === ROLES.ADMIN) {
           const accountsResponse = await import('@/services/user').then(s => s.getAllAccounts());
-          setAllAccounts(accountsResponse);
+          setAllAccounts(accountsResponse); 
         }
       } catch (error) {
         message.error('Lỗi khi tải dữ liệu tài khoản');
@@ -64,7 +65,7 @@ const AccountPage: React.FC = () => {
     };
 
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, [userRole]);
 
   // Cấu hình các cột cho bảng quản lý tài khoản (chỉ admin thấy)
@@ -78,7 +79,7 @@ const AccountPage: React.FC = () => {
           <Avatar style={{ backgroundColor: '#87d068', marginRight: 8 }}>{text.substring(0, 1)}</Avatar>
           <div>
             <div>{text}</div>
-            <div style={{ fontSize: '0.8em', color: '#888' }}>{record.email}</div>
+            <div style={{ fontSize: '0.8em', color: '#888' }}>{record.email}</div> 
           </div>
         </div>
       ),
@@ -87,8 +88,8 @@ const AccountPage: React.FC = () => {
       title: 'Vai trò',
       dataIndex: 'role',
       key: 'role',
-      render: (role: 'user' | 'admin') => (
-        <Tag color={role === 'admin' ? 'geekblue' : 'green'}>{role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</Tag>
+      render: (role: 'user' | 'admin') => ( 
+        <Tag color={role === ROLES.ADMIN ? 'geekblue' : 'green'}>{role === ROLES.ADMIN ? 'Quản trị viên' : 'Khách hàng'}</Tag> 
       ),
     },
     {
@@ -98,8 +99,8 @@ const AccountPage: React.FC = () => {
       render: (rentalInfo: Account['rentalInfo']) =>
         rentalInfo ? (
           <Tag color={rentalInfo.isExpired ? 'red' : rentalInfo.remainingDays <= 30 ? 'orange' : 'blue'}>
-            {rentalInfo.isExpired
-              ? `Hết hạn ${Math.abs(rentalInfo.remainingDays)} ngày`
+            {rentalInfo.isExpired 
+              ? `Hết hạn ${Math.abs(rentalInfo.remainingDays)} ngày` 
               : `Còn ${rentalInfo.remainingDays} ngày`}
           </Tag>
         ) : (
@@ -111,22 +112,22 @@ const AccountPage: React.FC = () => {
       dataIndex: 'extensionEnabled',
       key: 'extensionEnabled',
       render: (enabled: boolean, record: Account) =>
-        record.role === 'user' ? (
-          <Tag color={enabled ? 'success' : 'error'}>
+        record.role === 'user' ? (  // Chỉ hiển thị cho người dùng
+          <Tag color={enabled ? 'success' : 'error'}> 
             {enabled ? 'Được phép' : 'Không được phép'}
           </Tag>
-        ) : null,
+        ) : null, 
     },
     {
       title: 'Thao tác',
       key: 'action',
       render: (text: string, record: Account) =>
-        record.role === 'user' ? (
+        record.role === 'user' ? ( 
           <Switch
             checkedChildren="Tắt gia hạn"
             unCheckedChildren="Bật gia hạn"
-            checked={record.extensionEnabled}
-            onChange={(checked) => handleToggleExtensionPermission(record.id, checked)}
+            checked={record.extensionEnabled} 
+            onChange={(checked) => handleToggleExtensionPermission(record.id, checked)} 
           />
         ) : null,
     },
@@ -150,11 +151,11 @@ const AccountPage: React.FC = () => {
               <div style={{ position: 'relative', marginRight: 16 }}>
                 <Avatar
                   size={64}
-                  src={userData?.avatar ? `${config.API_URL}/${userData.avatar}` : undefined}
+                  src={userData?.avatar ? `${config.API_URL}/${userData.avatar}` : undefined} 
                   icon={!userData?.avatar ? <User /> : undefined}
                   style={{ backgroundColor: userData?.avatar ? '' : '#87d068' }}
                 >
-                  {!userData?.avatar && (userData?.fullName?.substring(0, 1) || 'U')}
+                  {!userData?.avatar && (userData?.fullName?.substring(0, 1) || 'U')} 
                 </Avatar>
                 {avatarPreview && (
                   <Spin
@@ -174,18 +175,18 @@ const AccountPage: React.FC = () => {
               <div>
                 <h1 style={{ margin: 0, fontSize: '1.8em' }}>{userData?.fullName}</h1>
                 <p style={{ color: '#888', margin: '4px 0' }}>{userData?.email}</p>
-                <Tag color={userData?.role === 'admin' ? 'geekblue' : 'green'}>
-                  {userData?.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}
+                <Tag color={userData?.role === ROLES.ADMIN ? 'geekblue' : 'green'}> 
+                  {userData?.role === ROLES.ADMIN ? 'Quản trị viên' : 'Khách hàng'}
                 </Tag>
               </div>
             </div>
             <div style={{ color: '#888' }}>
-              <p>Tham gia từ: {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString('vi-VN') : 'N/A'}</p>
+              <p>Tham gia từ: {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString('vi-VN') : 'N/A'}</p> 
             </div>
           </div>
         </Card>
 
-        {/* Tabs navigation */}
+        {/* Điều hướng  */}
         <Card style={{ marginBottom: 24, borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
           <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'profile' | 'rental' | 'management')}>
             <TabPane
@@ -197,7 +198,7 @@ const AccountPage: React.FC = () => {
               }
               key="profile"
             />
-            {userData?.role === 'user' && (
+            {userData?.role === ROLES.USER && (
               <TabPane
                 tab={
                   <span>
@@ -205,10 +206,10 @@ const AccountPage: React.FC = () => {
                     Thời gian ở trọ
                   </span>
                 }
-                key="rental"
+                key="rental" 
               />
             )}
-            {userData?.role === 'admin' && (
+            {userData?.role === ROLES.ADMIN && (
               <TabPane
                 tab={
                   <span>
@@ -216,7 +217,7 @@ const AccountPage: React.FC = () => {
                     Quản lý tài khoản
                   </span>
                 }
-                key="management"
+                key="management" 
               />
             )}
           </Tabs>
@@ -247,12 +248,12 @@ const AccountPage: React.FC = () => {
               </Card>
 
               {/* Đổi mật khẩu - Chỉ dành cho người dùng */}
-              {userData?.role === 'user' && (
+              {userData?.role === ROLES.USER && (
                 <Card title={<><Lock size={20} style={{ verticalAlign: 'middle', marginRight: 8 }} /> Đổi mật khẩu</>} bordered={false} style={{ borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
                   <Form
-                    form={passwordFormAnt}
+                    form={passwordFormAnt} 
                     layout="vertical"
-                    onFinish={handlePasswordChange}
+                    onFinish={handlePasswordChange} 
                   >
                     <Form.Item
                       label="Mật khẩu hiện tại"
@@ -271,10 +272,10 @@ const AccountPage: React.FC = () => {
                     <Form.Item
                       label="Xác nhận mật khẩu mới"
                       name="confirmPassword"
-                      dependencies={['newPassword']}
+                      dependencies={['newPassword']} 
                       rules={[
                         { required: true, message: 'Vui lòng xác nhận mật khẩu mới!' },
-                        ({ getFieldValue }) => ({
+                        ({ getFieldValue }) => ({ 
                           validator(_, value) {
                             if (!value || getFieldValue('newPassword') === value) {
                               return Promise.resolve();
@@ -302,11 +303,11 @@ const AccountPage: React.FC = () => {
                 <p><strong>Email:</strong> {userData?.email}</p>
                 <p>
                   <strong>Vai trò:</strong>{' '}
-                  <Tag color={userData?.role === 'admin' ? 'geekblue' : 'green'}>
-                    {userData?.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}
+                  <Tag color={userData?.role === ROLES.ADMIN ? 'geekblue' : 'green'}> 
+                    {userData?.role === ROLES.ADMIN ? 'Quản trị viên' : 'Khách hàng'}
                   </Tag>
                 </p>
-                {userData?.role === 'user' && (
+                {userData?.role === ROLES.USER && (
                   <p>
                     <strong>Quyền gia hạn:</strong>{' '}
                     <Tag color={userData?.extensionEnabled ? 'success' : 'error'}>
@@ -319,7 +320,7 @@ const AccountPage: React.FC = () => {
           )}
 
           {/* Quản lý thời gian ở trọ - Chỉ dành cho người dùng */}
-          {activeTab === 'rental' && userData?.role === 'user' && (
+          {activeTab === 'rental' && userData?.role === ROLES.USER && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
               {/* Thông tin thời gian ở trọ hiện tại */}
               <Card title={<><Calendar size={20} style={{ verticalAlign: 'middle', marginRight: 8 }} /> Thời gian ở trọ hiện tại</>} bordered={false} style={{ borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
@@ -329,7 +330,7 @@ const AccountPage: React.FC = () => {
                       <Card size="small" style={{ textAlign: 'center', flex: 1, margin: '0 8px', borderColor: '#d9d9d9' }}>
                         <p style={{ margin: 0, fontSize: '0.9em', color: '#888' }}>Ngày bắt đầu</p>
                         <p style={{ margin: 0, fontWeight: 'bold' }}>
-                          {new Date(userData.rentalInfo.startDate).toLocaleDateString('vi-VN')}
+                          {new Date(userData.rentalInfo.startDate).toLocaleDateString('vi-VN')} 
                         </p>
                       </Card>
                       <Card size="small" style={{ textAlign: 'center', flex: 1, margin: '0 8px', borderColor: '#d9d9d9' }}>
@@ -359,7 +360,7 @@ const AccountPage: React.FC = () => {
 
               {/* Gia hạn thời gian ở trọ */}
               <Card title={<><Calendar size={20} style={{ verticalAlign: 'middle', marginRight: 8 }} /> Gia hạn thời gian ở trọ</>} bordered={false} style={{ borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-                {userData?.extensionEnabled ? (
+                {userData?.extensionEnabled ? ( 
                   <Form
                     form={extendFormAnt}
                     layout="vertical"
@@ -371,7 +372,13 @@ const AccountPage: React.FC = () => {
                       name="months"
                       rules={[{ required: true, message: 'Vui lòng chọn số tháng muốn gia hạn!' }]}
                     >
-                      <Select onChange={(value) => extendFormAnt.setFieldsValue({ months: value })}>
+                      <Select
+                        value={monthsSelected}
+                        onChange={(value) => {
+                          extendFormAnt.setFieldsValue({ months: value });
+                          setMonthsSelected(value); 
+                        }}
+                      >
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => (
                           <Select.Option key={month} value={month}>
                             {month} tháng
@@ -384,12 +391,12 @@ const AccountPage: React.FC = () => {
                         • Thời gian hiện tại: {userData?.rentalInfo?.durationMonths || 0} tháng
                       </p>
                       <p style={{ margin: 0 }}>
-                        • Sau khi gia hạn: {(userData?.rentalInfo?.durationMonths || 0) + (extendFormAnt.getFieldValue('months') || 0)} tháng
+                        • Sau khi gia hạn: {(userData?.rentalInfo?.durationMonths || 0) + (monthsSelected || 0)} tháng
                       </p>
                     </Card>
                     <Form.Item>
                       <Button type="primary" htmlType="submit">
-                        Gia hạn {extendFormAnt.getFieldValue('months') || 1} tháng
+                        Gia hạn {monthsSelected || 1} tháng
                       </Button>
                     </Form.Item>
                   </Form>
@@ -405,7 +412,7 @@ const AccountPage: React.FC = () => {
           )}
 
           {/* Quản lý tài khoản - Chỉ dành cho admin */}
-          {activeTab === 'management' && userData?.role === 'admin' && (
+          {activeTab === 'management' && userData?.role === ROLES.ADMIN && (
             <Card title={<><Users size={20} style={{ verticalAlign: 'middle', marginRight: 8 }} /> Quản lý tài khoản người dùng</>} bordered={false} style={{ borderRadius: 8, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
               <Table
                 dataSource={allAccounts}

@@ -12,7 +12,6 @@ import {
 } from '../controllers/financeController';
 import { authenticateToken, restrictToAdmin, validateRequest } from '../middlewares/authMiddleware';
 import { validateRequestBody } from '../middlewares/validateRequestBody';
-
 const router = Router();
 
 // Cả admin và user có thể xem hóa đơn (user chỉ xem hóa đơn của mình)
@@ -20,7 +19,7 @@ router.get('/', authenticateToken, getInvoices);
 router.get('/:id', authenticateToken, getInvoiceById);
 // Trong financeRoutes.ts, thêm vào router
 router.get('/overdue', authenticateToken, restrictToAdmin, checkOverdueInvoices);
-// Chỉ admin có quyền thêm, sửa, xóa hóa đơn
+// Chỉ Admin có quyền thêm, sửa, xóa hóa đơn
 router.post(
   '/',
   validateRequestBody,
@@ -56,7 +55,7 @@ router.put(
 
 router.delete('/:id', authenticateToken, restrictToAdmin, deleteInvoice);
 
-// Chỉ admin có quyền xác nhận thanh toán
+// Chỉ Admin có quyền xác nhận thanh toán
 router.put('/:id/confirm-payment', authenticateToken, restrictToAdmin, confirmPayment);
 
 // Kiểm tra hóa đơn quá hạn (chạy định kỳ hoặc theo yêu cầu admin)
